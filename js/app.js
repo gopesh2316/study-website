@@ -578,7 +578,8 @@ document.addEventListener("DOMContentLoaded", () => {
       difficulty: "mix",
       qcount: 10,
       language: "english",
-      mode: "practice"
+      mode: "practice",
+      theme: "light"
     };
 
     const CHAPTER_NAMES = {
@@ -952,6 +953,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupPrefButtonGroup("pref-qcount", "qcount");
     setupPrefButtonGroup("pref-language", "language");
     setupPrefButtonGroup("pref-mode", "mode");
+    setupPrefButtonGroup("pref-theme", "theme");
 
     const customInput = document.getElementById("custom-qcount-input");
     if (customInput) {
@@ -1108,10 +1110,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function startExamTimer() {
       if (testTimerInterval) clearInterval(testTimerInterval);
       testTimerInterval = setInterval(() => {
+        const prevTimeStr = formatTime(secondsRemaining);
         secondsRemaining--;
+        const currTimeStr = formatTime(secondsRemaining);
         const timerEl = document.getElementById("test-timer-val");
         if (timerEl) {
-          timerEl.textContent = formatTime(secondsRemaining);
+          timerEl.innerHTML = renderTimeDigitGroupHtml(currTimeStr, prevTimeStr, true);
         }
         if (secondsRemaining <= 0) {
           clearInterval(testTimerInterval);
@@ -1125,6 +1129,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const digits = numStr.split("");
       const animClass = shouldAnimate ? " is-animating" : "";
       return `<span class="t-digit-group${animClass}">${digits.map((d, i) => `<span class="t-digit" data-stagger="${i + 1}">${d}</span>`).join("")}</span>`;
+    }
+
+    function renderTimeDigitGroupHtml(currTimeStr, prevTimeStr = null, shouldAnimate = true) {
+      const currChars = String(currTimeStr).split("");
+      const prevChars = prevTimeStr ? String(prevTimeStr).split("") : [];
+
+      return `<span class="t-digit-group">${currChars
+        .map((c, i) => {
+          if (c === ":") return `<span class="t-colon">:</span>`;
+
+          const changed = !prevTimeStr || i >= prevChars.length || c !== prevChars[i];
+          const animClass = (shouldAnimate && changed) ? " is-animating" : "";
+
+          return `<span class="t-digit${animClass}" data-stagger="${i + 1}">${c}</span>`;
+        })
+        .join("")}</span>`;
     }
 
     let shouldAnimateEconSwitch = true;
@@ -1152,8 +1172,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      const isDarkTheme = preferenceState.theme === "dark";
+      const wrapperClass = "live-test-wrapper" + (isDarkTheme ? " live-test-theme-dark" : "");
+
       let html = `
-        <div class="live-test-wrapper">
+        <div class="${wrapperClass}">
           <div class="live-test-body">
             <!-- LEFT COLUMN (25%) -->
             <div class="live-test-left-col">
@@ -1163,10 +1186,16 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
               <div class="live-test-left-footer">
                 <div class="live-test-timer-badge">
-                  <i class="fa-regular fa-clock"></i>
-                  <span id="test-timer-val">${formatTime(secondsRemaining)}</span>
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.24 16.24L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span id="test-timer-val">${renderTimeDigitGroupHtml(formatTime(secondsRemaining), false)}</span>
                 </div>
-                <button class="btn-leave-test" id="test-exit-btn"><i class="fa-solid fa-right-from-bracket"></i> Leave</button>
+                <button class="btn-toggle-live-theme" id="test-theme-toggle-btn" title="Toggle Light/Dark Theme">
+                  ${isDarkTheme
+                    ? `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
+                    : `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+                  <span>${isDarkTheme ? "Light" : "Dark"}</span>
+                </button>
+                <button class="btn-leave-test" id="test-exit-btn"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.8105 2C22.3973 8.57225 22.3973 15.4277 20.8105 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 11.95H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.20081 16.8999L2.59082 13.3899C2.40292 13.2115 2.25331 12.9966 2.15106 12.7585C2.04881 12.5204 1.99609 12.264 1.99609 12.0049C1.99609 11.7458 2.04881 11.4893 2.15106 11.2512C2.25331 11.0131 2.40292 10.7983 2.59082 10.6199L6.20081 7.09985" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Leave</button>
               </div>
             </div>
 
@@ -1186,7 +1215,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   return `
                     <div class="${optionClass}" data-opt-idx="${idx}">
-                      <div class="live-option-num">${idx + 1}</div>
+                      <div class="live-option-num">${String.fromCharCode(65 + idx)}</div>
                       <div class="live-option-text">${opt}</div>
                       <div class="live-option-radio">
                         <span class="radio-outer"><span class="radio-inner"></span></span>
@@ -1250,7 +1279,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       testSessionContainer.innerHTML = html;
 
+      if (isDarkTheme) {
+        testSessionContainer.classList.add("live-test-theme-dark");
+        document.querySelector(".main-content-area")?.classList.add("live-test-theme-dark");
+      } else {
+        testSessionContainer.classList.remove("live-test-theme-dark");
+        document.querySelector(".main-content-area")?.classList.remove("live-test-theme-dark");
+      }
+
       // Event Listeners for Session Controls
+      const themeToggleBtn = document.getElementById("test-theme-toggle-btn");
+      if (themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", () => {
+          preferenceState.theme = preferenceState.theme === "dark" ? "light" : "dark";
+          renderCurrentQuestion();
+        });
+      }
+
       const exitBtn = document.getElementById("test-exit-btn");
       if (exitBtn) {
         exitBtn.addEventListener("click", exitTestSession);
@@ -1317,7 +1362,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function exitTestSession() {
       if (testTimerInterval) clearInterval(testTimerInterval);
-      document.querySelector(".main-content-area")?.classList.remove("in-test-session");
+      document.querySelector(".main-content-area")?.classList.remove("in-test-session", "live-test-theme-dark");
+      testSessionContainer.classList.remove("live-test-theme-dark");
       testSessionContainer.classList.add("hidden");
       practiceWizardCard.classList.remove("hidden");
       const econFocusHeader = document.querySelector("#view-test-economics .test-focus-header");
@@ -1409,7 +1455,8 @@ document.addEventListener("DOMContentLoaded", () => {
       difficulty: "mix",
       qcount: 10,
       language: "english",
-      mode: "practice"
+      mode: "practice",
+      theme: "light"
     };
 
     const QUANT_CHAPTER_NAMES = {
@@ -1669,6 +1716,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupQuantPrefGroup("quant-pref-qcount", "qcount");
     setupQuantPrefGroup("quant-pref-language", "language");
     setupQuantPrefGroup("quant-pref-mode", "mode");
+    setupQuantPrefGroup("quant-pref-theme", "theme");
 
     const quantCustomInput = document.getElementById("quant-custom-qcount-input");
     if (quantCustomInput) {
@@ -1759,10 +1807,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function startQuantExamTimer() {
       if (quantTimerInterval) clearInterval(quantTimerInterval);
       quantTimerInterval = setInterval(() => {
+        const prevTimeStr = formatTime(quantSecondsRemaining);
         quantSecondsRemaining--;
+        const currTimeStr = formatTime(quantSecondsRemaining);
         const timerEl = document.getElementById("quant-test-timer-val");
         if (timerEl) {
-          timerEl.textContent = formatTime(quantSecondsRemaining);
+          timerEl.innerHTML = renderTimeDigitGroupHtml(currTimeStr, prevTimeStr, true);
         }
         if (quantSecondsRemaining <= 0) {
           clearInterval(quantTimerInterval);
@@ -1807,10 +1857,16 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
               <div class="live-test-left-footer">
                 <div class="live-test-timer-badge">
-                  <i class="fa-regular fa-clock"></i>
-                  <span id="quant-test-timer-val">${formatTime(quantSecondsRemaining)}</span>
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.24 16.24L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span id="quant-test-timer-val">${renderTimeDigitGroupHtml(formatTime(quantSecondsRemaining), false)}</span>
                 </div>
-                <button class="btn-leave-test" id="quant-test-exit-btn"><i class="fa-solid fa-right-from-bracket"></i> Leave</button>
+                <button class="btn-toggle-live-theme" id="quant-test-theme-toggle-btn" title="Toggle Light/Dark Theme">
+                  ${quantPrefState.theme === "dark"
+                    ? `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
+                    : `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+                  <span>${quantPrefState.theme === "dark" ? "Light" : "Dark"}</span>
+                </button>
+                <button class="btn-leave-test" id="quant-test-exit-btn"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.8105 2C22.3973 8.57225 22.3973 15.4277 20.8105 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 11.95H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.20081 16.8999L2.59082 13.3899C2.40292 13.2115 2.25331 12.9966 2.15106 12.7585C2.04881 12.5204 1.99609 12.264 1.99609 12.0049C1.99609 11.7458 2.04881 11.4893 2.15106 11.2512C2.25331 11.0131 2.40292 10.7983 2.59082 10.6199L6.20081 7.09985" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Leave</button>
               </div>
             </div>
 
@@ -1830,7 +1886,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   return `
                     <div class="${optionClass}" data-opt-idx="${idx}">
-                      <div class="live-option-num">${idx + 1}</div>
+                      <div class="live-option-num">${String.fromCharCode(65 + idx)}</div>
                       <div class="live-option-text">${opt}</div>
                       <div class="live-option-radio">
                         <span class="radio-outer"><span class="radio-inner"></span></span>
@@ -1893,6 +1949,22 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
 
       quantTestSessionContainer.innerHTML = html;
+
+      if (quantPrefState.theme === "dark") {
+        quantTestSessionContainer.classList.add("live-test-theme-dark");
+        document.querySelector(".main-content-area")?.classList.add("live-test-theme-dark");
+      } else {
+        quantTestSessionContainer.classList.remove("live-test-theme-dark");
+        document.querySelector(".main-content-area")?.classList.remove("live-test-theme-dark");
+      }
+
+      const quantThemeToggleBtn = document.getElementById("quant-test-theme-toggle-btn");
+      if (quantThemeToggleBtn) {
+        quantThemeToggleBtn.addEventListener("click", () => {
+          quantPrefState.theme = quantPrefState.theme === "dark" ? "light" : "dark";
+          renderQuantCurrentQuestion();
+        });
+      }
 
       const exitBtn = document.getElementById("quant-test-exit-btn");
       if (exitBtn) {
@@ -1960,7 +2032,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function exitQuantTestSession() {
       if (quantTimerInterval) clearInterval(quantTimerInterval);
-      document.querySelector(".main-content-area")?.classList.remove("in-test-session");
+      document.querySelector(".main-content-area")?.classList.remove("in-test-session", "live-test-theme-dark");
+      quantTestSessionContainer.classList.remove("live-test-theme-dark");
       quantTestSessionContainer.classList.add("hidden");
       quantPracticeWizardCard.classList.remove("hidden");
       const quantFocusHeader = document.querySelector("#view-test-quantitative .test-focus-header");
