@@ -1,14 +1,14 @@
 /* EcoMatrix - ElevenLabs Inspired Aesthetic Design System */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geom:ital,wght@0,300..900;1,300..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: 'Geom', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* ElevenLabs Inverted Color Scheme: Dull Gray Sidebar + Crisp White Main Content */
   --bg-body: #ffffff;
-  --bg-sidebar: #f4f4f6;
+  --bg-sidebar: #1F1F1F;
   --bg-card: #ffffff;
   --bg-card-subtle: #f9f9fb;
   --bg-hover: #eaeaea;
@@ -32,9 +32,9 @@
   --accent-rose: #f43f5e;
 
   --radius-lg: 16px;
-  --radius-md: 12px;
+  --radius-md: 5px;
   --radius-sm: 8px;
-  --radius-pill: 9999px;
+  --radius-pill: 6px;
   --transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -133,7 +133,7 @@ body {
 .skel-sidebar {
   width: 255px;
   background: var(--bg-sidebar);
-  border-right: 1px solid var(--border-color) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
@@ -180,12 +180,13 @@ body {
   overflow: hidden;
 }
 
-/* ====== DULL GRAY LEFT SIDEBAR ====== */
+/* ====== DARK LEFT SIDEBAR ====== */
 .app-sidebar {
   width: 255px;
   height: 100vh;
-  background-color: var(--bg-sidebar);
-  border-right: 1px solid var(--border-color) !important;
+  background-color: #1F1F1F !important;
+  color: #ffffff !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -198,7 +199,7 @@ body {
 }
 
 .app-sidebar:hover {
-  scrollbar-color: #d1d1d6 transparent;
+  scrollbar-color: #383838 transparent;
 }
 
 /* WebKit Scrollbar Styling for Sidebar (Chrome, Edge, Safari) */
@@ -217,11 +218,11 @@ body {
 }
 
 .app-sidebar:hover::-webkit-scrollbar-thumb {
-  background-color: #d1d1d6;
+  background-color: #383838;
 }
 
 .app-sidebar::-webkit-scrollbar-thumb:hover {
-  background-color: #a1a1aa;
+  background-color: #555555;
 }
 
 .sidebar-brand {
@@ -229,14 +230,15 @@ body {
   align-items: center;
   gap: 0.65rem;
   padding: 0.4rem 0.6rem 1rem 0.6rem;
-  border-bottom: 0px solid var(--border-color) !important;
+  border-bottom: 0px solid rgba(255, 255, 255, 0.08) !important;
   margin-bottom: 0.5rem;
 }
 
 .brand-icon {
   width: 32px;
   height: 32px;
-  background: var(--primary);
+  background: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #ffffff;
   border-radius: 80px;
   display: flex;
@@ -249,7 +251,7 @@ body {
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--text-main);
+  color: #ffffff !important;
 }
 
 .sidebar-nav {
@@ -263,8 +265,8 @@ body {
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: capitalize;
-  letter-spacing: 0.06em;
-  color: var(--text-subtle);
+  letter-spacing: 0.0em;
+  color: rgba(255, 255, 255, 0.45) !important;
   margin: 1.1rem 0 0.35rem 0.65rem;
 }
 
@@ -277,10 +279,10 @@ body {
   border-radius: var(--radius-md);
   font-size: 0.88rem;
   font-weight: 500;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.78) !important;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0s ease, color 0s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
   text-align: left;
   user-select: none;
   border: 1px solid transparent !important;
@@ -300,45 +302,44 @@ body {
   font-size: 0.95rem;
   width: 18px;
   text-align: center;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.6) !important;
   transition: color 0.15s ease;
 }
 
 .sidebar-item:hover {
-  background-color: #e4e4e7;
-  color: var(--text-main);
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
   border-color: transparent !important;
 }
 
 .sidebar-item:hover i {
-  color: var(--text-main);
+  color: #ffffff !important;
 }
 
-/* Active Sidebar Item: Crisp White Card Pill */
+/* Active Sidebar Item: Dark Highlighted Card Pill */
 .sidebar-item.active {
-  background-color: #e5e5e9;
-  color: var(--active-text);
+  background-color: #2e2e2e !important;
+  color: #ffffff !important;
   font-weight: 600;
-  border: 1px solid #e5e5e9 !important;
+  border: 0px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04) !important;
   outline: none !important;
-  box-shadow: none !important;
 }
 
 .sidebar-item.active:focus,
 .sidebar-item.active:focus-visible,
 .sidebar-item.active:active {
-  border: 1px solid #e3e3e3 !important;
+  border: 0px solid rgba(255, 255, 255, 0.14) !important;
   outline: none !important;
-  box-shadow: none !important;
 }
 
 .sidebar-item.active i {
-  color: var(--active-text);
+  color: #ffffff !important;
 }
 
 .sidebar-footer {
   padding-top: 1rem;
-  border-top: 1px solid var(--border-color) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
   margin-top: auto;
 }
 
@@ -347,17 +348,17 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.45rem 0.75rem;
-  background: #ffffff;
-  border: 1px solid var(--border-color) !important;
+  background: #282828 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: var(--radius-pill);
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.8) !important;
   justify-content: center;
 }
 
 .syllabus-pill i {
-  color: var(--accent-emerald);
+  color: var(--accent-emerald) !important;
 }
 
 /* ====== WHITE MAIN CONTENT AREA ====== */
@@ -427,7 +428,7 @@ body {
 .app-view {
   display: none;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2.2rem;
   width: 100%;
 }
 
@@ -463,8 +464,9 @@ body {
 
 /* ====== HERO BANNER CARD ====== */
 .hero-banner-card {
-  background: #ffffff;
-  border: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
   box-shadow: none !important;
   position: relative;
   overflow: hidden;
@@ -4177,4 +4179,216 @@ body::-webkit-scrollbar,
 
 .live-test-theme-dark .palette-grid-btn.current {
   outline: 2px solid #a855f7 !important;
+}
+
+/* ============================================================
+   HOMEPAGE DARK THEME (#0F0F0F Background + #1a1a1a Containers)
+   ============================================================ */
+.app-layout[data-active-view="home"] .main-content-area,
+.main-content-area:has(#view-home.active),
+#view-home {
+  background-color: #0F0F0F !important;
+  background: #0F0F0F !important;
+  color: #ffffff !important;
+}
+
+body:has(#view-home.active),
+body:has(.app-layout[data-active-view="home"]) {
+  background-color: #0F0F0F !important;
+}
+
+body:has(#view-home.active) #skeleton-overlay,
+body:has(.app-layout[data-active-view="home"]) #skeleton-overlay {
+  background: #0F0F0F !important;
+}
+
+body:has(#view-home.active) .skeleton-shimmer,
+body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
+  background: linear-gradient(90deg, #1a1a1a 0%, #262626 40%, #1e1e1e 60%, #1a1a1a 100%) !important;
+}
+
+.app-layout[data-active-view="home"] .main-content-area,
+.main-content-area:has(#view-home.active) {
+  scrollbar-color: #2e2e2e transparent;
+}
+
+.app-layout[data-active-view="home"] .main-content-area::-webkit-scrollbar-thumb,
+.main-content-area:has(#view-home.active)::-webkit-scrollbar-thumb {
+  background-color: #2e2e2e;
+}
+
+/* Hero Banner Card: Fully Transparent, No Border, No Shadow */
+#view-home .hero-banner-card,
+.hero-banner-card {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Homepage Containers (#1a1a1a + Inset Highlight Shadows) */
+#view-home .card:not(.hero-banner-card),
+#view-home .quiz-card,
+#view-home .explore-card,
+#view-home .hero-stat-pill {
+  background-color: #1a1a1a !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.02), inset 0 0 0 1px rgba(255, 255, 255, 0.02) !important;
+  border: 0px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: 8px !important;
+}
+
+/* Container Hover States */
+#view-home .hero-stat-pill:hover {
+  background-color: #222222 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+#view-home .explore-card:hover {
+  background-color: #222222 !important;
+  background: #222222 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04), inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+  transform: translateY(0px);
+}
+
+/* Homepage Typography - White Text */
+#view-home,
+#view-home h2,
+#view-home h3,
+#view-home h4,
+#view-home p,
+#view-home span,
+#view-home .hero-greeting,
+#view-home .quiz-card-title,
+#view-home .quiz-question-text,
+#view-home .section-heading h3,
+#view-home .explore-card h4,
+#view-home .stat-val {
+  color: #ffffff !important;
+}
+
+#view-home .hero-subtitle,
+#view-home .section-subtext,
+#view-home .quiz-card-subtitle,
+#view-home .explore-card p,
+#view-home .stat-lbl,
+#view-home .feedback-explanation {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Quiz Card Supporting Elements */
+#view-home .quiz-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+#view-home .quiz-bolt-icon {
+  background: #242424 !important;
+}
+
+#view-home .quiz-difficulty-tag {
+  background: #242424 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+#view-home .quiz-option-btn {
+  background-color: #242424 !important;
+  background: #242424 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.02), inset 0 0 0 1px rgba(255, 255, 255, 0.02) !important;
+  color: #ffffff !important;
+}
+
+#view-home .quiz-option-btn:hover {
+  background-color: #2c2c2c !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+#view-home .opt-prefix {
+  background: #1a1a1a !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+#view-home .quiz-option-btn.selected-correct {
+  background: #064e3b !important;
+  border-color: #10b981 !important;
+  color: #a7f3d0 !important;
+}
+
+#view-home .quiz-option-btn.selected-wrong {
+  background: #4c0519 !important;
+  border-color: #f43f5e !important;
+  color: #fecdd3 !important;
+}
+
+#view-home .quiz-feedback-box {
+  background: #222222 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+#view-home #next-quiz-btn {
+  background: #242424 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+#view-home #next-quiz-btn:hover {
+  background: #333333 !important;
+}
+
+/* Explore Card Buttons & Icon Boxes */
+#view-home .explore-action-btn {
+  background: #242424 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+#view-home .explore-action-btn:hover {
+  background: #333333 !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+#view-home .explore-card:has(.icon-purple):hover .explore-action-btn {
+  background: var(--accent-purple) !important;
+  border-color: var(--accent-purple) !important;
+  color: #ffffff !important;
+}
+
+#view-home .explore-card:has(.icon-blue):hover .explore-action-btn {
+  background: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+  color: #ffffff !important;
+}
+
+#view-home .explore-card:has(.icon-emerald):hover .explore-action-btn {
+  background: var(--accent-emerald) !important;
+  border-color: var(--accent-emerald) !important;
+  color: #ffffff !important;
+}
+
+#view-home .explore-card:has(.icon-amber):hover .explore-action-btn {
+  background: var(--accent-amber) !important;
+  border-color: var(--accent-amber) !important;
+  color: #ffffff !important;
+}
+
+#view-home .explore-icon-box.icon-purple {
+  background: rgba(139, 92, 246, 0.18) !important;
+  color: #c084fc !important;
+}
+
+#view-home .explore-icon-box.icon-blue {
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #60a5fa !important;
+}
+
+#view-home .explore-icon-box.icon-emerald {
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #34d399 !important;
+}
+
+#view-home .explore-icon-box.icon-amber {
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #fbbf24 !important;
 }

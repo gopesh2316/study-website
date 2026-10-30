@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoMatrix - Dynamic Interactive Economics & Graph Simulator</title>
+  <meta name="description"
+    content="An interactive web simulator for microeconomics and macroeconomics with live dynamic graphs for production, cost curves, revenue, market equilibrium, taxes, and Keynesian multiplier.">
+
+  <!-- Google Fonts (Geom & Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geom:ital,wght@0,300..900;1,300..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+    rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="initial-load">
+
+  <!-- ====== SKELETON LOADING OVERLAY ====== -->
+  <div id="skeleton-overlay">
+    <div class="skel-sidebar">
+      <div class="skel-logo-pill skeleton-shimmer"></div>
+      <div class="skel-nav-item skeleton-shimmer"></div>
+      <div class="skel-nav-item skeleton-shimmer"></div>
+      <div class="skel-nav-item skeleton-shimmer"></div>
+      <div class="skel-nav-item skeleton-shimmer"></div>
+      <div class="skel-nav-item skeleton-shimmer"></div>
+    </div>
+    <div class="skel-body">
+      <div class="skel-hero skeleton-shimmer"></div>
+      <div class="skel-card skeleton-shimmer"></div>
+    </div>
+  </div>
+  <!-- ====== END SKELETON ====== -->
+
+  <div class="app-layout" data-active-view="home">
+
+    <!-- ====== ELEVENLABS-STYLE LEFT SIDEBAR ====== -->
+    <aside class="app-sidebar" id="app-sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <span class="brand-title">EcoMatrix</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- Home Link (Default View) -->
+        <button class="sidebar-item active" data-view="home">
+          <i class="fa-solid fa-house"></i>
+          <span>Home</span>
+        </button>
+
+        <!-- Section 1: Test -->
+        <div class="sidebar-section-title">Test</div>
+        <button class="sidebar-item" data-view="test-economics">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Economics</span>
+        </button>
+        <button class="sidebar-item" data-view="test-quantitative">
+          <i class="fa-solid fa-calculator"></i>
+          <span>Quantitative</span>
+        </button>
+
+        <!-- Section 2: Graphs -->
+        <div class="sidebar-section-title">Graphs</div>
+        <button class="sidebar-item" data-view="graph-workspace" data-graph="sub-prod-shortrun"
+          data-parent-tab="tab-production">
+          <i class="fa-solid fa-industry"></i>
+          <span>Short-Run Production</span>
+        </button>
+        <button class="sidebar-item" data-view="graph-workspace" data-graph="sub-prod-cobb"
+          data-parent-tab="tab-production">
+          <i class="fa-solid fa-cubes"></i>
+          <span>Cobb-Douglas Model</span>
+        </button>
+        <button class="sidebar-item" data-view="graph-workspace" data-graph="sub-cost-total" data-parent-tab="tab-cost">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Total Cost Curves</span>
+        </button>
+        <button class="sidebar-item" data-view="graph-workspace" data-graph="sub-cost-unit" data-parent-tab="tab-cost">
+          <i class="fa-solid fa-vector-square"></i>
+          <span>Unit Cost Curves</span>
+        </button>
+        <button class="sidebar-item" data-view="graph-workspace" data-graph="sub-rev-total"
+          data-parent-tab="tab-revenue">
+          <i class="fa-solid fa-money-bill-trend-up"></i>
+          <span>Total Revenue & Cost</span>
+        </button>
+        <button class="sidebar-item" data-view="graph-workspace" data-graph="sub-rev-marginal"
+          data-parent-tab="tab-revenue">
+          <i class="fa-solid fa-chart-area"></i>
+          <span>Marginal Revenue & MC</span>
+        </button>
+        <button class="sidebar-item" data-view="graph-workspace" data-graph="sub-market" data-parent-tab="tab-market">
+          <i class="fa-solid fa-scale-balanced"></i>
+          <span>Market Equilibrium</span>
+        </button>
+        <button class="sidebar-item" data-view="graph-workspace" data-graph="sub-macro" data-parent-tab="tab-presets">
+          <i class="fa-solid fa-globe"></i>
+          <span>Macroeconomics</span>
+        </button>
+
+        <!-- Section 3: Tools -->
+        <div class="sidebar-section-title">Tools & Labs</div>
+        <button class="sidebar-item" data-view="presets">
+          <i class="fa-solid fa-flask"></i>
+          <span>Scenario Lab</span>
+        </button>
+        <button class="sidebar-item" id="sidebar-about-btn">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>About</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer User / Syllabus Badge -->
+      <div class="sidebar-footer">
+        <div class="syllabus-pill">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>ICAI 2026 Data Verified</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ====== MAIN CONTENT AREA ====== -->
+    <main class="main-content-area">
+
+
+
+      <!-- ====================================================================
+           VIEW 1: HOMEPAGE (DEFAULT LANDING VIEW)
+           ==================================================================== -->
+      <div id="view-home" class="app-view active">
+
+        <!-- "Hello Student" Hero Banner Card -->
+        <section class="card hero-banner-card">
+          <div class="hero-content">
+            <h2 class="hero-greeting">Hello Student! 👋</h2>
+            <p class="hero-subtitle">
+              Master in Business Economics and Quantitative Aptitude for CA Foundation and real time dynamic graphs
+            </p>
+
+            <div class="hero-stats-grid">
+              <div class="hero-stat-pill">
+                <i class="fa-solid fa-trophy icon-rank"></i>
+                <div class="stat-info">
+                  <span class="stat-val" id="stat-rank">Top 1%</span>
+                  <span class="stat-lbl">Student Rank</span>
+                </div>
+              </div>
+              <div class="hero-stat-pill">
+                <i class="fa-solid fa-circle-check icon-check"></i>
+                <div class="stat-info">
+                  <span class="stat-val" id="stat-mastered">10,000+</span>
+                  <span class="stat-lbl">Questions Available</span>
+                </div>
+              </div>
+              <div class="hero-stat-pill">
+                <i class="fa-solid fa-wand-magic-sparkles icon-ai"></i>
+                <div class="stat-info">
+                  <span class="stat-val" id="stat-ai">AI Tutor</span>
+                  <span class="stat-lbl">Smart Practice</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- "Quiz of the Day" Interactive Card -->
+        <section class="card quiz-card">
+          <div class="quiz-header">
+            <div class="quiz-title-group">
+              <i class="fa-solid fa-bolt quiz-bolt-icon"></i>
+              <div>
+                <h3 class="quiz-card-title">Quiz of the Day</h3>
+                <span class="quiz-card-subtitle">Daily micro & macro economics practice challenge</span>
+              </div>
+            </div>
+            <span class="quiz-difficulty-tag" id="daily-quiz-difficulty">Intermediate</span>
+          </div>
+
+          <div class="quiz-body">
+            <p class="quiz-question-text" id="daily-quiz-question">
+              When Marginal Cost (MC) is less than Average Total Cost (ATC), what is the behavior of Average Total Cost
+              as output increases?
+            </p>
+
+            <div class="quiz-options-list" id="daily-quiz-options">
+              <!-- Rendered dynamically by JS -->
+            </div>
+
+            <!-- Instant Feedback Alert Box -->
+            <div class="quiz-feedback-box hidden" id="daily-quiz-feedback">
+              <div class="feedback-status" id="quiz-feedback-status"></div>
+              <p class="feedback-explanation" id="quiz-feedback-explanation"></p>
+            </div>
+          </div>
+
+          <div class="quiz-footer">
+            <button class="btn btn-secondary" id="next-quiz-btn">
+              <i class="fa-solid fa-arrow-right"></i> Next Question
+            </button>
+          </div>
+        </section>
+
+        <!-- "Explore More" Section -->
+        <section class="explore-section">
+          <div class="section-heading">
+            <h3>Explore Learning Modules</h3>
+            <span class="section-subtext">Choose a module to start practicing or simulating graphs</span>
+          </div>
+
+          <div class="explore-grid">
+            <div class="explore-card" data-navigate="test-economics">
+              <div class="explore-icon-box icon-purple">
+                <i class="fa-solid fa-chart-pie"></i>
+              </div>
+              <h4>Economics Test Hub</h4>
+              <p>Practice chapter-wise multiple choice tests for Production, Cost Curves, Markets & Macroeconomics.</p>
+              <button class="explore-action-btn">Start Test <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+
+            <div class="explore-card" data-navigate="test-quantitative">
+              <div class="explore-icon-box icon-blue">
+                <i class="fa-solid fa-calculator"></i>
+              </div>
+              <h4>Quantitative Analysis</h4>
+              <p>Master mathematical economics: Elasticity formulas, Cost derivatives, MR=MC profit optimization.</p>
+              <button class="explore-action-btn">Practice Math <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+
+            <div class="explore-card" data-navigate="graph-workspace" data-target-graph="sub-prod-shortrun">
+              <div class="explore-icon-box icon-emerald">
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+              <h4>Graph Simulators</h4>
+              <p>Manipulate live parameters on 8 interactive micro & macro economic graphs in real-time.</p>
+              <button class="explore-action-btn">Open Graphs <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+
+            <div class="explore-card" data-navigate="presets">
+              <div class="explore-icon-box icon-amber">
+                <i class="fa-solid fa-flask"></i>
+              </div>
+              <h4>Real-World Scenario Lab</h4>
+              <p>Simulate rent control crises, carbon pigouvian taxes, monopoly pricing, and fiscal policy shocks.</p>
+              <button class="explore-action-btn">Launch Lab <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+
+      <!-- ====================================================================
+           VIEW 2: TEST - ECONOMICS
+           ==================================================================== -->
+      <div id="view-test-economics" class="app-view">
+
+        <!-- Header with Exit to Dashboard & Squeezed Stepper Progress Bar (Full Width Screen Border) -->
+        <div class="test-focus-header">
+          <div class="test-focus-header-inner">
+            <button class="btn-exit-focus" id="btn-exit-econ-focus"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+
+            <div class="stepper-squeeze-wrap">
+              <div class="stepper-squeeze-info">
+                <span class="step-squeeze-title" id="econ-step-title">Step 1: Select Chapters</span>
+                <span class="step-squeeze-count" id="econ-step-badge">1 of 6</span>
+              </div>
+              <div class="stepper-progress-bar segmented" id="econ-progress-bar">
+                <div class="progress-segment active" data-seg="1"></div>
+                <div class="progress-segment" data-seg="2"></div>
+                <div class="progress-segment" data-seg="3"></div>
+                <div class="progress-segment" data-seg="4"></div>
+                <div class="progress-segment" data-seg="5"></div>
+                <div class="progress-segment" data-seg="6"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== PRACTICE WIZARD CARD ====== -->
+        <div id="econ-practice-wizard" class="practice-wizard-card">
+
+          <!-- Wizard Body with 6-Slide Track -->
+          <div class="wizard-body wizard-slider-wrapper">
+            <div class="wizard-slider-track slide-step-1" id="wizard-slider-track">
+
+              <!-- STEP 1: CHAPTER SELECTION -->
+              <div class="wizard-step-panel active-slide" id="wizard-step-1">
+                <div class="step-section-header">
+                  <div>
+                    <h3>Select chapters</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Choose one or more chapters
+                      for your economics practice</p>
+                  </div>
+                  <div class="chapter-badge-group">
+                    <button class="chapter-toggle-all-btn" id="chapter-toggle-all">Select All</button>
+                    <div class="chapter-counter-badge" id="chapter-counter">0/10 Selected</div>
+                  </div>
+                </div>
+
+                <div class="chapter-grid" id="chapter-grid-container">
+                  <!-- 10 Chapters matching ICAI syllabus -->
+                  <label class="chapter-card" data-chapter-id="1">
+                    <div class="chapter-num">1</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Theory of Demand and Supply</div>
+                      <div class="chapter-count">891 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="1">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card" data-chapter-id="2">
+                    <div class="chapter-num">2</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Money Market</div>
+                      <div class="chapter-count">440 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="2">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card" data-chapter-id="3">
+                    <div class="chapter-num">3</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">International Trade</div>
+                      <div class="chapter-count">461 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="3">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card" data-chapter-id="4">
+                    <div class="chapter-num">4</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Indian Economy</div>
+                      <div class="chapter-count">364 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="4">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card" data-chapter-id="5">
+                    <div class="chapter-num">5</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Nature and Scope of Business Economics</div>
+                      <div class="chapter-count">411 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="5">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card" data-chapter-id="6">
+                    <div class="chapter-num">6</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Public Finance</div>
+                      <div class="chapter-count">459 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="6">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card" data-chapter-id="7">
+                    <div class="chapter-num">7</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Price Determination in Different Markets</div>
+                      <div class="chapter-count">558 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="7">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card" data-chapter-id="8">
+                    <div class="chapter-num">8</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Business Cycles</div>
+                      <div class="chapter-count">274 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="8">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card" data-chapter-id="9">
+                    <div class="chapter-num">9</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Determination of National Income</div>
+                      <div class="chapter-count">560 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="9">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card" data-chapter-id="10">
+                    <div class="chapter-num">10</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Theory of Production and Cost</div>
+                      <div class="chapter-count">721 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="10">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- STEP 2: DIFFICULTY SELECTION -->
+              <div class="wizard-step-panel" id="wizard-step-2">
+                <div class="step-section-header">
+                  <div>
+                    <h3>Level of Difficulty</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Choose the complexity of
+                      questions for your session</p>
+                  </div>
+                </div>
+                <div class="difficulty-slider-container" id="pref-difficulty-container">
+                  <div class="difficulty-status-display" id="econ-diff-status">
+                    <span class="diff-badge-pill diff-mix" id="econ-diff-badge">
+                      <i class="fa-solid fa-layer-group"></i> <span id="econ-diff-label">Mix Ques.</span>
+                    </span>
+                    <span class="diff-desc-text" id="econ-diff-desc">Balanced combination of all difficulty
+                      levels</span>
+                  </div>
+
+                  <div class="fat-slider-wrapper">
+                    <input type="range" class="difficulty-fat-slider diff-mix" id="econ-difficulty-slider" min="0"
+                      max="100" step="0.1" value="100">
+                    <div class="fat-slider-track-fill diff-mix" id="econ-slider-track-fill" style="width: 100%;"></div>
+                  </div>
+
+                  <div class="difficulty-ticks-row" id="econ-diff-ticks">
+                    <span class="knob-floating-label diff-mix" id="econ-knob-label">Mix Ques.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 3: NUMBER OF QUESTIONS -->
+              <div class="wizard-step-panel" id="wizard-step-3">
+                <div class="step-section-header">
+                  <div>
+                    <h3>Select Number of Questions</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">How many questions would you
+                      like to attempt?</p>
+                  </div>
+                </div>
+                <div class="pref-options-row" id="pref-qcount" style="margin-top: 1.2rem;">
+                  <button class="pref-btn active" data-value="10">
+                    <span class="pref-btn-num">10</span>
+                    <span class="pref-btn-sub">Questions</span>
+                  </button>
+                  <button class="pref-btn" data-value="20">
+                    <span class="pref-btn-num">20</span>
+                    <span class="pref-btn-sub">Questions</span>
+                  </button>
+                  <button class="pref-btn" data-value="30">
+                    <span class="pref-btn-num">30</span>
+                    <span class="pref-btn-sub">Questions</span>
+                  </button>
+                  <button class="pref-btn" data-value="custom" id="pref-custom-btn">
+                    <span class="pref-btn-icon"><i class="fa-solid fa-gear"></i></span>
+                    <span class="pref-btn-sub">Custom</span>
+                  </button>
+                </div>
+                <div class="custom-qcount-input-wrap hidden" id="custom-qcount-wrap">
+                  <div class="custom-input-box">
+                    <i class="fa-solid fa-hashtag custom-input-icon"></i>
+                    <input type="number" id="custom-qcount-input" min="5" max="100" placeholder="e.g. 25"
+                      class="custom-q-input">
+                    <span class="custom-input-unit">Questions</span>
+                  </div>
+                  <div class="custom-input-hint"><i class="fa-solid fa-circle-info"></i> Enter any number from 5 to 100
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 4: LANGUAGE SELECTION -->
+              <div class="wizard-step-panel" id="wizard-step-4">
+                <div class="step-section-header">
+                  <div>
+                    <h3>Select Language</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Choose your preferred
+                      question language</p>
+                  </div>
+                </div>
+                <div class="pref-options-row" id="pref-language" style="margin-top: 1.2rem;">
+                  <button class="pref-btn active" data-value="english">English</button>
+                  <button class="pref-btn disabled" data-value="hindi" disabled>
+                    <span>Hindi</span>
+                    <span class="pref-btn-sub" style="font-size: 0.68rem; margin-top: 2px;">coming soon</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STEP 5: MODE SELECTION -->
+              <div class="wizard-step-panel" id="wizard-step-5">
+                <div class="step-section-header">
+                  <div>
+                    <h3>Select Mode</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Select how you want to
+                      attempt this test</p>
+                  </div>
+                </div>
+                <div class="mode-cards-grid" id="pref-mode" style="margin-top: 1.2rem;">
+                  <div class="mode-card active" data-value="practice">
+                    <div class="mode-card-icon">
+                      <svg class="mode-card-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                    <div class="mode-card-content">
+                      <div class="mode-card-title">Practice Mode</div>
+                      <div class="mode-card-desc">Review answer explanations after each question</div>
+                    </div>
+                  </div>
+                  <div class="mode-card" data-value="exam">
+                    <div class="mode-card-icon">
+                      <svg class="mode-card-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M9 14l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                    <div class="mode-card-content">
+                      <div class="mode-card-title">Exam Mode</div>
+                      <div class="mode-card-desc">Timed session with final score report</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 6: SUMMARY & START TEST -->
+              <div class="wizard-step-panel" id="wizard-step-6">
+                <div class="step-section-header">
+                  <h3>Test Ready! Review Summary</h3>
+                </div>
+
+                <div class="start-test-summary-card">
+                  <div class="summary-grid">
+                    <div class="summary-item-card">
+                      <div class="summary-item-header">
+                        <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                          <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="2" />
+                          <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        <span class="summary-item-label">Question</span>
+                      </div>
+                      <span class="summary-item-val" id="summary-qcount">10 Questions</span>
+                    </div>
+
+                    <div class="summary-item-card">
+                      <div class="summary-item-header">
+                        <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <span class="summary-item-label">Difficulty</span>
+                      </div>
+                      <span class="summary-item-val" id="summary-difficulty">Mix Questions</span>
+                    </div>
+
+                    <div class="summary-item-card">
+                      <div class="summary-item-header">
+                        <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span class="summary-item-label">Test Mode</span>
+                      </div>
+                      <span class="summary-item-val" id="summary-mode">Practice Mode</span>
+                    </div>
+
+                    <div class="summary-item-card">
+                      <div class="summary-item-header">
+                        <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                          <path
+                            d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                            stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <span class="summary-item-label">Language</span>
+                      </div>
+                      <span class="summary-item-val" id="summary-language">English</span>
+                    </div>
+
+                    <div class="summary-item-card">
+                      <div class="summary-item-header">
+                        <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                          <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        <span class="summary-item-label">Estimated Time</span>
+                      </div>
+                      <span class="summary-item-val" id="summary-time">~10 Mins</span>
+                    </div>
+                  </div>
+
+                  <div class="summary-item-card full-width">
+                    <div class="summary-item-header">
+                      <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round" />
+                      </svg>
+                      <span class="summary-item-label" id="summary-chapters-count-lbl">Selected Chapters (0)</span>
+                    </div>
+                    <div class="summary-chapters-tags" id="summary-chapters-tags">
+                      <!-- Populated dynamically -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Wizard Footer Actions -->
+          <div class="wizard-footer">
+            <button class="btn-wizard btn-prev" id="wizard-btn-prev">Previous</button>
+            <button class="btn-wizard btn-next" id="wizard-btn-next">Next</button>
+          </div>
+        </div>
+
+        <!-- ====== ACTIVE TEST SESSION CONTAINER ====== -->
+        <div id="econ-test-session" class="test-session-container hidden">
+          <!-- Dynamically populated when test starts -->
+        </div>
+
+      </div>
+
+
+      <!-- ====================================================================
+           VIEW 3: TEST - QUANTITATIVE
+           ==================================================================== -->
+      <div id="view-test-quantitative" class="app-view">
+
+        <!-- Header with Exit to Dashboard & Squeezed Stepper Progress Bar (Full Width Screen Border) -->
+        <div class="test-focus-header">
+          <div class="test-focus-header-inner">
+            <button class="btn-exit-focus" id="btn-exit-quant-focus"><i class="fa-solid fa-arrow-left"></i>
+              Exit</button>
+
+            <div class="stepper-squeeze-wrap">
+              <div class="stepper-squeeze-info">
+                <span class="step-squeeze-title" id="quant-step-title">Step 1: Select Chapters</span>
+                <span class="step-squeeze-count" id="quant-step-badge">1 of 6</span>
+              </div>
+              <div class="stepper-progress-bar segmented" id="quant-progress-bar">
+                <div class="progress-segment active" data-seg="1"></div>
+                <div class="progress-segment" data-seg="2"></div>
+                <div class="progress-segment" data-seg="3"></div>
+                <div class="progress-segment" data-seg="4"></div>
+                <div class="progress-segment" data-seg="5"></div>
+                <div class="progress-segment" data-seg="6"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== QUANTITATIVE PRACTICE WIZARD CARD ====== -->
+        <div id="quant-practice-wizard" class="practice-wizard-card">
+
+          <!-- Wizard Body with 6-Slide Track -->
+          <div class="wizard-body wizard-slider-wrapper">
+            <div class="wizard-slider-track slide-step-1" id="quant-wizard-slider-track">
+
+              <!-- STEP 1: CHAPTER SELECTION -->
+              <div class="wizard-step-panel active-slide" id="quant-wizard-step-1">
+                <div class="step-section-header">
+                  <div>
+                    <h3>Select chapters</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Choose one or more math
+                      chapters for practice</p>
+                  </div>
+                  <div class="chapter-badge-group">
+                    <button class="chapter-toggle-all-btn" id="quant-chapter-toggle-all">Select All</button>
+                    <div class="chapter-counter-badge" id="quant-chapter-counter">0/10 Selected</div>
+                  </div>
+                </div>
+
+                <div class="chapter-grid" id="quant-chapter-grid-container">
+                  <!-- 10 Chapters for Quantitative Aptitude -->
+                  <label class="chapter-card quant-chapter-card" data-chapter-id="1">
+                    <div class="chapter-num">1</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Ratio & Proportion, Indices, Logarithms</div>
+                      <div class="chapter-count">620 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="1">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card quant-chapter-card" data-chapter-id="2">
+                    <div class="chapter-num">2</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Equations & Quadratic Functions</div>
+                      <div class="chapter-count">510 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="2">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card quant-chapter-card" data-chapter-id="3">
+                    <div class="chapter-num">3</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Linear Inequalities</div>
+                      <div class="chapter-count">340 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="3">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card quant-chapter-card" data-chapter-id="4">
+                    <div class="chapter-num">4</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Time Value of Money (Compound Interest & Annuity)</div>
+                      <div class="chapter-count">850 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="4">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card quant-chapter-card" data-chapter-id="5">
+                    <div class="chapter-num">5</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Permutations and Combinations</div>
+                      <div class="chapter-count">480 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="5">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card quant-chapter-card" data-chapter-id="6">
+                    <div class="chapter-num">6</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Sequence and Series (AP & GP)</div>
+                      <div class="chapter-count">430 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="6">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card quant-chapter-card" data-chapter-id="7">
+                    <div class="chapter-num">7</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Sets, Relations and Functions</div>
+                      <div class="chapter-count">390 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="7">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card quant-chapter-card" data-chapter-id="8">
+                    <div class="chapter-num">8</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Measures of Central Tendency & Dispersion</div>
+                      <div class="chapter-count">710 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="8">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card quant-chapter-card" data-chapter-id="9">
+                    <div class="chapter-num">9</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Correlation and Regression</div>
+                      <div class="chapter-count">530 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="9">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+
+                  <label class="chapter-card quant-chapter-card" data-chapter-id="10">
+                    <div class="chapter-num">10</div>
+                    <div class="chapter-info">
+                      <div class="chapter-title">Probability & Theoretical Distributions</div>
+                      <div class="chapter-count">610 Questions</div>
+                    </div>
+                    <input type="checkbox" class="chapter-checkbox" value="10">
+                    <span class="custom-checkbox"><i class="fa-solid fa-check"></i></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- STEP 2: DIFFICULTY SELECTION -->
+              <div class="wizard-step-panel" id="quant-wizard-step-2">
+                <div class="step-section-header">
+                  <div>
+                    <h3>Level of Difficulty</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Choose difficulty level for
+                      math questions</p>
+                  </div>
+                </div>
+                <div class="difficulty-slider-container" id="quant-pref-difficulty-container">
+                  <div class="difficulty-status-display" id="quant-diff-status">
+                    <span class="diff-badge-pill diff-mix" id="quant-diff-badge">
+                      <i class="fa-solid fa-layer-group"></i> <span id="quant-diff-label">Mix Ques.</span>
+                    </span>
+                    <span class="diff-desc-text" id="quant-diff-desc">Balanced combination of all difficulty
+                      levels</span>
+                  </div>
+
+                  <div class="fat-slider-wrapper">
+                    <input type="range" class="difficulty-fat-slider diff-mix" id="quant-difficulty-slider" min="0"
+                      max="100" step="0.1" value="100">
+                    <div class="fat-slider-track-fill diff-mix" id="quant-slider-track-fill" style="width: 100%;"></div>
+                  </div>
+
+                  <div class="difficulty-ticks-row" id="quant-diff-ticks">
+                    <span class="knob-floating-label diff-mix" id="quant-knob-label">Mix Ques.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 3: NUMBER OF QUESTIONS -->
+              <div class="wizard-step-panel" id="quant-wizard-step-3">
+                <div class="step-section-header">
+                  <div>
+                    <h3>Select Number of Questions</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">How many math problems would
+                      you like to solve?</p>
+                  </div>
+                </div>
+                <div class="pref-options-row" id="quant-pref-qcount" style="margin-top: 1.2rem;">
+                  <button class="pref-btn active" data-value="10">
+                    <span class="pref-btn-num">10</span>
+                    <span class="pref-btn-sub">Questions</span>
+                  </button>
+                  <button class="pref-btn" data-value="20">
+                    <span class="pref-btn-num">20</span>
+                    <span class="pref-btn-sub">Questions</span>
+                  </button>
+                  <button class="pref-btn" data-value="30">
+                    <span class="pref-btn-num">30</span>
+                    <span class="pref-btn-sub">Questions</span>
+                  </button>
+                  <button class="pref-btn" data-value="custom" id="quant-pref-custom-btn">
+                    <span class="pref-btn-icon"><i class="fa-solid fa-gear"></i></span>
+                    <span class="pref-btn-sub">Custom</span>
+                  </button>
+                </div>
+                <div class="custom-qcount-input-wrap hidden" id="quant-custom-qcount-wrap">
+                  <div class="custom-input-box">
+                    <i class="fa-solid fa-hashtag custom-input-icon"></i>
+                    <input type="number" id="quant-custom-qcount-input" min="5" max="100" placeholder="e.g. 25"
+                      class="custom-q-input">
+                    <span class="custom-input-unit">Questions</span>
+                  </div>
+                  <div class="custom-input-hint"><i class="fa-solid fa-circle-info"></i> Enter any number from 5 to 100
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 4: LANGUAGE SELECTION -->
+              <div class="wizard-step-panel" id="quant-wizard-step-4">
+                <div class="step-section-header">
+                  <div>
+                    <h3>Select Language</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Choose preferred question
+                      language</p>
+                  </div>
+                </div>
+                <div class="pref-options-row" id="quant-pref-language" style="margin-top: 1.2rem;">
+                  <button class="pref-btn active" data-value="english">English</button>
+                  <button class="pref-btn disabled" data-value="hindi" disabled>
+                    <span>Hindi</span>
+                    <span class="pref-btn-sub" style="font-size: 0.68rem; margin-top: 2px;">coming soon</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STEP 5: MODE SELECTION -->
+              <div class="wizard-step-panel" id="quant-wizard-step-5">
+                <div class="step-section-header">
+                  <div>
+                    <h3>Select Mode</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Select how you want to
+                      attempt this math test</p>
+                  </div>
+                </div>
+                <div class="mode-cards-grid" id="quant-pref-mode" style="margin-top: 1.2rem;">
+                  <div class="mode-card active" data-value="practice">
+                    <div class="mode-card-icon">
+                      <svg class="mode-card-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                    <div class="mode-card-content">
+                      <div class="mode-card-title">Practice Mode</div>
+                      <div class="mode-card-desc">Review step-by-step math solutions after each question</div>
+                    </div>
+                  </div>
+                  <div class="mode-card" data-value="exam">
+                    <div class="mode-card-icon">
+                      <svg class="mode-card-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M9 14l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                    <div class="mode-card-content">
+                      <div class="mode-card-title">Exam Mode</div>
+                      <div class="mode-card-desc">Timed session with final score report</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 6: SUMMARY & START TEST -->
+              <div class="wizard-step-panel" id="quant-wizard-step-6">
+                <div class="step-section-header">
+                  <h3>Test Ready! Review Summary</h3>
+                </div>
+
+                <div class="start-test-summary-card">
+                  <div class="summary-grid">
+                    <div class="summary-item-card">
+                      <div class="summary-item-header">
+                        <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                          style="color:#2563eb;">
+                          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                          <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="2" />
+                          <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        <span class="summary-item-label">Question</span>
+                      </div>
+                      <span class="summary-item-val" id="quant-summary-qcount">10 Questions</span>
+                    </div>
+
+                    <div class="summary-item-card">
+                      <div class="summary-item-header">
+                        <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                          style="color:#2563eb;">
+                          <path
+                            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <span class="summary-item-label">Difficulty</span>
+                      </div>
+                      <span class="summary-item-val" id="quant-summary-difficulty">Mix Questions</span>
+                    </div>
+
+                    <div class="summary-item-card">
+                      <div class="summary-item-header">
+                        <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                          style="color:#2563eb;">
+                          <path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span class="summary-item-label">Test Mode</span>
+                      </div>
+                      <span class="summary-item-val" id="quant-summary-mode">Practice Mode</span>
+                    </div>
+
+                    <div class="summary-item-card">
+                      <div class="summary-item-header">
+                        <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                          style="color:#2563eb;">
+                          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                          <path
+                            d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                            stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <span class="summary-item-label">Language</span>
+                      </div>
+                      <span class="summary-item-val" id="quant-summary-language">English</span>
+                    </div>
+
+                    <div class="summary-item-card">
+                      <div class="summary-item-header">
+                        <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                          style="color:#2563eb;">
+                          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                          <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        <span class="summary-item-label">Estimated Time</span>
+                      </div>
+                      <span class="summary-item-val" id="quant-summary-time">~15 Mins</span>
+                    </div>
+                  </div>
+
+                  <div class="summary-item-card full-width">
+                    <div class="summary-item-header">
+                      <svg class="summary-item-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        style="color:#2563eb;">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round" />
+                      </svg>
+                      <span class="summary-item-label" id="quant-summary-chapters-count-lbl">Selected Chapters
+                        (0)</span>
+                    </div>
+                    <div class="summary-chapters-tags" id="quant-summary-chapters-tags">
+                      <!-- Populated dynamically -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Wizard Footer Actions -->
+          <div class="wizard-footer">
+            <button class="btn-wizard btn-prev" id="quant-wizard-btn-prev">Previous</button>
+            <button class="btn-wizard btn-next" id="quant-wizard-btn-next">Next</button>
+          </div>
+        </div>
+
+        <!-- ====== ACTIVE QUANT TEST SESSION CONTAINER ====== -->
+        <div id="quant-test-session" class="test-session-container hidden">
+          <!-- Dynamically populated when test starts -->
+        </div>
+
+      </div>
+
+
+      <!-- ====================================================================
+           VIEW 4: PRESETS & SCENARIO LAB
+           ==================================================================== -->
+      <div id="view-presets" class="app-view">
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card-title" style="font-size: 1.3rem;">
+            <i class="fa-solid fa-flask"></i> Interactive Real-World Economic Scenario Lab
+          </div>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            Select any pre-configured economic event below. EcoMatrix will automatically set up the model parameters and
+            take you directly to the dynamic graph simulation with real-time feedback!
+          </p>
+
+          <div class="presets-grid" id="presets-grid-container">
+            <!-- Populated dynamically via js/app.js -->
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ====================================================================
+           VIEW 5: GRAPH WORKSPACE (ALL DYNAMIC GRAPH SIMULATORS)
+           ==================================================================== -->
+      <div id="view-graph-workspace" class="app-view">
+
+        <!-- TAB 1: PRODUCTION FUNCTIONS -->
+        <section id="tab-production" class="tab-content">
+          <div class="dashboard-grid">
+            <aside class="card">
+              <!-- PANEL 1: Short-Run Controls -->
+              <div class="sub-tab-panel active" data-subpanel="sub-prod-shortrun">
+                <div class="card-title">
+                  <i class="fa-solid fa-sliders"></i> Short-Run Parameters
+                </div>
+
+                <div class="custom-slider-group">
+                  <div class="slider-progress">
+                    <div class="slider-handle-bar"></div>
+                  </div>
+                  <div class="slider-ticks"></div>
+                  <div class="slider-content">
+                    <span class="slider-label">Total Product (TP)</span>
+                    <span class="slider-value" id="val-prod-a">12</span>
+                  </div>
+                  <input type="range" id="prod-a" class="custom-range-input" min="5" max="30" step="0.5" value="12">
+                </div>
+
+                <div class="custom-slider-group">
+                  <div class="slider-progress">
+                    <div class="slider-handle-bar"></div>
+                  </div>
+                  <div class="slider-ticks"></div>
+                  <div class="slider-content">
+                    <span class="slider-label">Marginal Product (MP)</span>
+                    <span class="slider-value" id="val-prod-b">1.5</span>
+                  </div>
+                  <input type="range" id="prod-b" class="custom-range-input" min="0.1" max="5" step="0.1" value="1.5">
+                </div>
+
+                <div class="custom-slider-group">
+                  <div class="slider-progress">
+                    <div class="slider-handle-bar"></div>
+                  </div>
+                  <div class="slider-ticks"></div>
+                  <div class="slider-content">
+                    <span class="slider-label">Average Product (AP)</span>
+                    <span class="slider-value" id="val-prod-c">0.08</span>
+                  </div>
+                  <input type="range" id="prod-c" class="custom-range-input" min="0.01" max="0.3" step="0.01"
+                    value="0.08">
+                </div>
+
+                <div class="toggle-control-group">
+                  <span class="toggle-control-label">
+                    <i class="fa-solid fa-layer-group"></i> Show Stages (I, II, III)
+                  </span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-stages" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- PANEL 2: Cobb-Douglas Controls -->
+              <div class="sub-tab-panel" data-subpanel="sub-prod-cobb">
+                <div class="card-title">
+                  <i class="fa-solid fa-cubes"></i> Cobb-Douglas Model
+                </div>
+
+                <div class="custom-slider-group">
+                  <div class="slider-progress">
+                    <div class="slider-handle-bar"></div>
+                  </div>
+                  <div class="slider-ticks"></div>
+                  <div class="slider-content">
+                    <span class="slider-label">Total Factor Productivity (A)</span>
+                    <span class="slider-value" id="val-cobb-A">10</span>
+                  </div>
+                  <input type="range" id="cobb-A" class="custom-range-input" min="1" max="30" step="1" value="10">
+                </div>
+
+                <div class="custom-slider-group">
+                  <div class="slider-progress">
+                    <div class="slider-handle-bar"></div>
+                  </div>
+                  <div class="slider-ticks"></div>
+                  <div class="slider-content">
+                    <span class="slider-label">Fixed Capital Stock (K)</span>
+                    <span class="slider-value" id="val-cobb-K">10</span>
+                  </div>
+                  <input type="range" id="cobb-K" class="custom-range-input" min="1" max="50" step="1" value="10">
+                </div>
+
+                <div class="custom-slider-group">
+                  <div class="slider-progress">
+                    <div class="slider-handle-bar"></div>
+                  </div>
+                  <div class="slider-ticks"></div>
+                  <div class="slider-content">
+                    <span class="slider-label">Capital Elasticity (α)</span>
+                    <span class="slider-value" id="val-cobb-alpha">0.5</span>
+                  </div>
+                  <input type="range" id="cobb-alpha" class="custom-range-input" min="0.1" max="0.9" step="0.05"
+                    value="0.5">
+                </div>
+
+                <div class="custom-slider-group">
+                  <div class="slider-progress">
+                    <div class="slider-handle-bar"></div>
+                  </div>
+                  <div class="slider-ticks"></div>
+                  <div class="slider-content">
+                    <span class="slider-label">Labor Elasticity (β)</span>
+                    <span class="slider-value" id="val-cobb-beta">0.5</span>
+                  </div>
+                  <input type="range" id="cobb-beta" class="custom-range-input" min="0.1" max="0.9" step="0.05"
+                    value="0.5">
+                </div>
+              </div>
+
+              <hr class="sidebar-divider">
+
+              <!-- Accordion 1: Formulas -->
+              <div class="formula-box">
+                <button class="formula-header" type="button">
+                  <span class="formula-title"><i class="fa-solid fa-square-root-variable"></i> Formulas</span>
+                  <i class="fa-solid fa-chevron-down formula-chevron"></i>
+                </button>
+                <div class="formula-body">
+                  <div class="sub-tab-panel active" data-subpanel="sub-prod-shortrun">
+                    <div>TP(L) = a·L + b·L² - c·L³</div>
+                    <div>MP(L) = a + 2b·L - 3c·L²</div>
+                    <div>AP(L) = a + b·L - c·L²</div>
+                  </div>
+                  <div class="sub-tab-panel" data-subpanel="sub-prod-cobb">
+                    <div>Y = A · K<sup>α</sup> · L<sup>β</sup></div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <main>
+              <div class="sub-tab-panel active" data-subpanel="sub-prod-shortrun">
+                <div class="card chart-card">
+                  <div class="chart-wrapper">
+                    <canvas id="chart-production"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="sub-tab-panel" data-subpanel="sub-prod-cobb">
+                <div class="card chart-card">
+                  <div class="chart-wrapper">
+                    <canvas id="chart-cobb"></canvas>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </section>
+
+        <!-- TAB 2: COST ANALYSIS -->
+        <section id="tab-cost" class="tab-content">
+          <div class="dashboard-grid">
+            <aside class="card">
+              <div class="card-title">
+                <i class="fa-solid fa-sliders"></i> Firm Cost Parameters
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Total Fixed Cost (FC)</span>
+                  <span class="slider-value" id="val-cost-fc">$100</span>
+                </div>
+                <input type="range" id="cost-fc" class="custom-range-input" min="20" max="300" step="10" value="100">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Base Cost Coeff (v1)</span>
+                  <span class="slider-value" id="val-cost-v1">20</span>
+                </div>
+                <input type="range" id="cost-v1" class="custom-range-input" min="5" max="50" step="1" value="20">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Efficiency Dip Coeff (v2)</span>
+                  <span class="slider-value" id="val-cost-v2">-1.5</span>
+                </div>
+                <input type="range" id="cost-v2" class="custom-range-input" min="-5" max="0" step="0.1" value="-1.5">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Capacity Bottleneck (v3)</span>
+                  <span class="slider-value" id="val-cost-v3">0.08</span>
+                </div>
+                <input type="range" id="cost-v3" class="custom-range-input" min="0.01" max="0.3" step="0.01"
+                  value="0.08">
+              </div>
+
+              <hr class="sidebar-divider">
+
+              <div class="formula-box">
+                <button class="formula-header" type="button">
+                  <span class="formula-title"><i class="fa-solid fa-square-root-variable"></i> Formulas</span>
+                  <i class="fa-solid fa-chevron-down formula-chevron"></i>
+                </button>
+                <div class="formula-body">
+                  <div>TC = FC + VC = FC + v1·Q + v2·Q² + v3·Q³</div>
+                  <div>ATC = TC / Q = AFC + AVC</div>
+                  <div>MC = d(TC)/dQ = v1 + 2v2·Q + 3v3·Q²</div>
+                </div>
+              </div>
+            </aside>
+
+            <main>
+              <div class="sub-tab-panel active" data-subpanel="sub-cost-total">
+                <div class="card chart-card">
+                  <div class="chart-wrapper">
+                    <canvas id="chart-cost-total"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="sub-tab-panel" data-subpanel="sub-cost-unit">
+                <div class="card chart-card">
+                  <div class="chart-wrapper">
+                    <canvas id="chart-cost-unit"></canvas>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </section>
+
+        <!-- TAB 3: REVENUE & PROFIT -->
+        <section id="tab-revenue" class="tab-content">
+          <div class="dashboard-grid">
+            <aside class="card">
+              <div class="card-title">
+                <i class="fa-solid fa-sliders"></i> Demand & Cost Inputs
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Max Demand Price (a)</span>
+                  <span class="slider-value" id="val-rev-pmax">$100</span>
+                </div>
+                <input type="range" id="rev-pmax" class="custom-range-input" min="40" max="200" step="5" value="100">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Demand Slope (b)</span>
+                  <span class="slider-value" id="val-rev-slope">2.0</span>
+                </div>
+                <input type="range" id="rev-slope" class="custom-range-input" min="0.5" max="6.0" step="0.1"
+                  value="2.0">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Fixed Cost (FC)</span>
+                  <span class="slider-value" id="val-rev-fc">$150</span>
+                </div>
+                <input type="range" id="rev-fc" class="custom-range-input" min="20" max="400" step="10" value="150">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">MC Intercept (c1)</span>
+                  <span class="slider-value" id="val-rev-c1">$10</span>
+                </div>
+                <input type="range" id="rev-c1" class="custom-range-input" min="2" max="40" step="1" value="10">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">MC Slope (c2)</span>
+                  <span class="slider-value" id="val-rev-c2">1.2</span>
+                </div>
+                <input type="range" id="rev-c2" class="custom-range-input" min="0.2" max="4.0" step="0.1" value="1.2">
+              </div>
+
+              <hr class="sidebar-divider">
+
+              <div class="formula-box">
+                <button class="formula-header" type="button">
+                  <span class="formula-title"><i class="fa-solid fa-square-root-variable"></i> Formulas</span>
+                  <i class="fa-solid fa-chevron-down formula-chevron"></i>
+                </button>
+                <div class="formula-body">
+                  <div>MR = MC ==> Max Profit (Π*)</div>
+                  <div>TR = P · Q = (a - b·Q)·Q</div>
+                </div>
+              </div>
+            </aside>
+
+            <main>
+              <div class="sub-tab-panel active" data-subpanel="sub-rev-total">
+                <div class="card chart-card">
+                  <div class="chart-wrapper">
+                    <canvas id="chart-rev-total"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="sub-tab-panel" data-subpanel="sub-rev-marginal">
+                <div class="card chart-card">
+                  <div class="chart-wrapper">
+                    <canvas id="chart-rev-marginal"></canvas>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </section>
+
+        <!-- TAB 4: MARKET EQUILIBRIUM -->
+        <section id="tab-market" class="tab-content">
+          <div class="dashboard-grid">
+            <aside class="card">
+              <div class="card-title">
+                <i class="fa-solid fa-sliders"></i> Supply, Demand & Taxes
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Demand Intercept (a)</span>
+                  <span class="slider-value" id="val-mkt-a">100</span>
+                </div>
+                <input type="range" id="mkt-a" class="custom-range-input" min="40" max="200" step="5" value="100">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Demand Slope (b)</span>
+                  <span class="slider-value" id="val-mkt-b">2.0</span>
+                </div>
+                <input type="range" id="mkt-b" class="custom-range-input" min="0.5" max="5.0" step="0.1" value="2.0">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Supply Intercept (c)</span>
+                  <span class="slider-value" id="val-mkt-c">10</span>
+                </div>
+                <input type="range" id="mkt-c" class="custom-range-input" min="0" max="60" step="2" value="10">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Supply Slope (d)</span>
+                  <span class="slider-value" id="val-mkt-d">1.5</span>
+                </div>
+                <input type="range" id="mkt-d" class="custom-range-input" min="0.5" max="5.0" step="0.1" value="1.5">
+              </div>
+
+              <hr style="border-color: var(--border-color); margin: 1.2rem 0;">
+
+              <div class="card-title">
+                <i class="fa-solid fa-landmark"></i> Government Intervention
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Per-Unit Excise Tax ($)</span>
+                  <span class="slider-value" id="val-mkt-tax">$0</span>
+                </div>
+                <input type="range" id="mkt-tax" class="custom-range-input" min="0" max="40" step="1" value="0">
+              </div>
+
+              <div class="control-group" style="margin-bottom: 1rem;">
+                <div class="label-row">
+                  <span class="control-label" style="font-size: 0.82rem; font-weight:600; color:var(--text-main);">Price
+                    Control Policy</span>
+                </div>
+                <select id="mkt-control-type" class="num-input"
+                  style="width: 100%; text-align: left; padding: 8px 12px; border-radius: 8px; font-family: inherit; background: var(--bg-card-subtle);">
+                  <option value="none">None (Free Market)</option>
+                  <option value="ceiling">Price Ceiling (Rent Control)</option>
+                  <option value="floor">Price Floor (Minimum Wage)</option>
+                </select>
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Control Price ($)</span>
+                  <span class="slider-value" id="val-mkt-control-price">$40</span>
+                </div>
+                <input type="range" id="mkt-control-price" class="custom-range-input" min="10" max="100" step="2"
+                  value="40">
+              </div>
+            </aside>
+
+            <main>
+              <div class="card chart-card">
+                <div class="chart-wrapper">
+                  <canvas id="chart-market"></canvas>
+                </div>
+              </div>
+            </main>
+          </div>
+        </section>
+
+        <!-- TAB 5: MACROECONOMICS (KEYNESIAN CROSS) -->
+        <section id="tab-macro" class="tab-content">
+          <div class="dashboard-grid">
+            <aside class="card">
+              <div class="card-title">
+                <i class="fa-solid fa-sliders"></i> Aggregate Demand Sliders
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Autonomous Consumption (C0)</span>
+                  <span class="slider-value" id="val-mac-c0">$100</span>
+                </div>
+                <input type="range" id="mac-c0" class="custom-range-input" min="20" max="300" step="10" value="100">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Marginal Propensity to Consume (MPC)</span>
+                  <span class="slider-value" id="val-mac-mpc">0.80</span>
+                </div>
+                <input type="range" id="mac-mpc" class="custom-range-input" min="0.4" max="0.95" step="0.05"
+                  value="0.80">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Planned Investment (I)</span>
+                  <span class="slider-value" id="val-mac-i">$150</span>
+                </div>
+                <input type="range" id="mac-i" class="custom-range-input" min="50" max="400" step="10" value="150">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Government Expenditure (G)</span>
+                  <span class="slider-value" id="val-mac-g">$200</span>
+                </div>
+                <input type="range" id="mac-g" class="custom-range-input" min="50" max="500" step="10" value="200">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Net Exports (NX)</span>
+                  <span class="slider-value" id="val-mac-nx">-$20</span>
+                </div>
+                <input type="range" id="mac-nx" class="custom-range-input" min="-100" max="100" step="10" value="-20">
+              </div>
+
+              <div class="custom-slider-group">
+                <div class="slider-progress">
+                  <div class="slider-handle-bar"></div>
+                </div>
+                <div class="slider-ticks"></div>
+                <div class="slider-content">
+                  <span class="slider-label">Income Tax Rate (t)</span>
+                  <span class="slider-value" id="val-mac-t">0.15</span>
+                </div>
+                <input type="range" id="mac-t" class="custom-range-input" min="0" max="0.4" step="0.05" value="0.15">
+              </div>
+
+              <hr class="sidebar-divider">
+
+              <div class="formula-box">
+                <button class="formula-header" type="button">
+                  <span class="formula-title"><i class="fa-solid fa-square-root-variable"></i> Formulas</span>
+                  <i class="fa-solid fa-chevron-down formula-chevron"></i>
+                </button>
+                <div class="formula-body">
+                  <div>k = 1 / [1 - MPC·(1 - t)]</div>
+                  <div>Y* = k · (C0 + I + G + NX)</div>
+                </div>
+              </div>
+            </aside>
+
+            <main>
+              <div class="card chart-card">
+                <div class="chart-wrapper">
+                  <canvas id="chart-macro"></canvas>
+                </div>
+              </div>
+            </main>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- About Modal / Popup -->
+  <div id="about-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-card">
+      <button id="close-about-modal" class="modal-close-btn" aria-label="Close modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="modal-header">
+        <div class="modal-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <h2>About EcoMatrix</h2>
+        <span class="modal-subtitle">Interactive Economics & Graph Simulator</span>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-verified-badge">
+          <div class="verified-header">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Verified Syllabus (2026)</span>
+          </div>
+          <p class="verified-desc">
+            All data, formulas, schedules, and simulation models are derived from <strong>ICAI Study Material
+              2026</strong> and thoroughly verified.
+          </p>
+        </div>
+
+        <div class="modal-contact-section">
+          <span class="contact-label">Contact & Feedback</span>
+          <div class="modal-contact-links">
+            <a href="https://gopesh.in" target="_blank" rel="noopener noreferrer" class="contact-link">
+              <i class="fa-solid fa-globe icon-globe"></i> gopesh.in
+            </a>
+            <a href="https://t.me/gopeshk" target="_blank" rel="noopener noreferrer" class="contact-link">
+              <i class="fa-brands fa-telegram icon-telegram"></i> @gopeshk
+            </a>
+          </div>
+        </div>
+
+        <p class="modal-footer-text">&copy; 2026 EcoMatrix &bull; All Rights Reserved</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== FULL WHITE BLUR START TEST COUNTDOWN OVERLAY ====== -->
+  <div id="test-start-countdown-overlay" class="countdown-overlay">
+    <div class="countdown-content">
+      <div class="countdown-subtext" id="countdown-subtext">GET READY...</div>
+      <div class="countdown-number" id="countdown-number">3</div>
+    </div>
+  </div>
+
+  <!-- Core Scripts -->
+  <script src="js/economics.js"></script>
+  <script src="js/presets.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>

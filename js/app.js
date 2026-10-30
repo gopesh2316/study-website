@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Toggle Focus Mode (Hide sidebar on full-page test views)
     const appLayout = document.querySelector(".app-layout");
     if (appLayout) {
+      appLayout.setAttribute("data-active-view", targetViewId);
       if (targetViewId === "test-economics" || targetViewId === "test-quantitative") {
         appLayout.classList.add("focus-mode");
       } else {

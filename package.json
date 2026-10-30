@@ -1,0 +1,19 @@
+{
+  "name": "study-website",
+  "version": "1.0.0",
+  "description": "EcoMatrix Dynamic Economics & Graph Simulator on Cloudflare Workers",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/sync-assets.js",
+    "predev": "npm run build",
+    "dev": "wrangler dev",
+    "predeploy": "npm run build",
+    "deploy": "wrangler deploy",
+    "start": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.156.0"
+  }
+}
+
