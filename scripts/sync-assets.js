@@ -32,6 +32,13 @@ function copyDir(srcDir, destDir) {
   }
 }
 
+// Ensure js/config.js exists in rootDir (fallback to config.example.js if gitignored/missing)
+const rootConfig = path.join(rootDir, 'js', 'config.js');
+const rootConfigExample = path.join(rootDir, 'js', 'config.example.js');
+if (!fs.existsSync(rootConfig) && fs.existsSync(rootConfigExample)) {
+  fs.copyFileSync(rootConfigExample, rootConfig);
+}
+
 // Copy top-level static assets
 copyFile(path.join(rootDir, 'index.html'), path.join(publicDir, 'index.html'));
 copyFile(path.join(rootDir, 'hand_3d.png'), path.join(publicDir, 'hand_3d.png'));
@@ -40,5 +47,10 @@ copyFile(path.join(rootDir, 'hand_3d.png'), path.join(publicDir, 'hand_3d.png'))
 copyDir(path.join(rootDir, 'css'), path.join(publicDir, 'css'));
 copyDir(path.join(rootDir, 'js'), path.join(publicDir, 'js'));
 
-console.log('✓ Successfully synchronized website static assets to public/');
+// Guarantee public/js/config.js exists even if config.js was not in js/
+const pubConfig = path.join(publicDir, 'js', 'config.js');
+if (!fs.existsSync(pubConfig) && fs.existsSync(rootConfigExample)) {
+  fs.copyFileSync(rootConfigExample, pubConfig);
+}
 
+console.log('✓ Successfully synchronized website static assets to public/');

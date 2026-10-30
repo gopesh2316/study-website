@@ -1,0 +1,6 @@
+# Cloudflare Workers Local Development Environment Variables
+# Copy this file to .dev.vars and paste your actual Gemini API key.
+# Note: .dev.vars is ignored by git (.gitignore) to keep secrets safe.
+
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
+

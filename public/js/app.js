@@ -55,6 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
       targetView.classList.add("active");
     }
 
+    if (targetViewId === "dashboard" && window.EcoDashboard && typeof window.EcoDashboard.renderDashboard === "function") {
+      window.EcoDashboard.renderDashboard();
+    }
+
     // Toggle Focus Mode (Hide sidebar on full-page test views)
     const appLayout = document.querySelector(".app-layout");
     if (appLayout) {
@@ -1054,6 +1058,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let visitedQuestions = new Set();
     let testTimerInterval = null;
     let secondsRemaining = 0;
+    let econSessionStartTime = Date.now();
 
     function getChapterName(chId, isQuant = false) {
       const stepId = isQuant ? "quant-wizard-step-1" : "wizard-step-1";
@@ -1097,6 +1102,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (econFocusHeader) econFocusHeader.classList.add("hidden");
 
       secondsRemaining = activeTestQuestions.length * 60; // 1 min per Q
+      econSessionStartTime = Date.now();
       startExamTimer();
 
       renderCurrentQuestion();
@@ -1234,6 +1240,12 @@ document.addEventListener("DOMContentLoaded", () => {
               ` : ""}
 
               <div class="live-test-footer">
+                <button class="btn-instant-help" id="test-btn-instant-help" type="button" title="Get Instant Help">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/>
+                  </svg>
+                  <span>Get Instant Help</span>
+                </button>
                 <button class="btn-wizard btn-prev btn-live-prev" id="test-btn-prev" ${currentQIndex === 0 ? "disabled" : ""}>Previous</button>
                 <button class="btn-wizard btn-next btn-live-next" id="test-btn-next">${currentQIndex === totalQ - 1 ? "Submit & View Results" : "Save & Next"}</button>
               </div>
@@ -1359,6 +1371,25 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       }
+
+      const helpBtn = document.getElementById("test-btn-instant-help");
+      if (helpBtn) {
+        helpBtn.addEventListener("click", () => {
+          if (typeof window.openInstantHelpModal === "function") {
+            window.openInstantHelpModal({
+              question: qData.q,
+              options: qData.opts,
+              subject: "Business Economics",
+              chapter: qData.chName || getChapterName(qData.chId, false),
+              selectedOptionIndex: userAnswers[currentQIndex],
+              selectedOptionText: userAnswers[currentQIndex] !== undefined ? qData.opts[userAnswers[currentQIndex]] : null,
+              mode: preferenceState.mode,
+              qNum: currentQIndex + 1,
+              totalQ: totalQ
+            });
+          }
+        });
+      }
     }
 
     function exitTestSession() {
@@ -1374,14 +1405,39 @@ document.addEventListener("DOMContentLoaded", () => {
     function finishTestSession() {
       if (testTimerInterval) clearInterval(testTimerInterval);
       let correctCount = 0;
+      let incorrectCount = 0;
+      let unansweredCount = 0;
+      const chapterBreakdown = {};
+
       activeTestQuestions.forEach((q, idx) => {
-        if (userAnswers[idx] === q.correct) {
+        const chId = q.chId || 1;
+        if (!chapterBreakdown[chId]) {
+          chapterBreakdown[chId] = {
+            name: q.chName || `Chapter ${chId}`,
+            total: 0,
+            correct: 0,
+            incorrect: 0,
+            unanswered: 0
+          };
+        }
+        chapterBreakdown[chId].total++;
+
+        const ans = userAnswers[idx];
+        if (ans === undefined) {
+          unansweredCount++;
+          chapterBreakdown[chId].unanswered++;
+        } else if (ans === q.correct) {
           correctCount++;
+          chapterBreakdown[chId].correct++;
+        } else {
+          incorrectCount++;
+          chapterBreakdown[chId].incorrect++;
         }
       });
 
       const totalQ = activeTestQuestions.length;
-      const pct = Math.round((correctCount / totalQ) * 100);
+      const pct = totalQ > 0 ? Number(((correctCount * 100.0) / totalQ).toFixed(2)) : 0;
+      const durationSecs = Math.max(1, Math.round((Date.now() - econSessionStartTime) / 1000));
 
       testSessionContainer.innerHTML = `
         <div class="test-results-card">
@@ -1390,7 +1446,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="score-total">${correctCount}/${totalQ} Correct</div>
           </div>
           <h2 class="results-title">${pct >= 70 ? "Great Job! Practice Completed 🎉" : "Practice Session Completed"}</h2>
-          <p class="results-desc">You scored ${correctCount} out of ${totalQ} questions correctly across ${selectedChapters.size} selected chapter(s).</p>
+          <p class="results-desc">You scored ${correctCount} out of ${totalQ} questions correctly (${unansweredCount} unanswered) across ${selectedChapters.size} selected chapter(s).</p>
+          
+          <!-- Save status feedback box -->
+          <div id="econ-save-status-box" class="save-status-box"></div>
+
           <div class="results-actions">
             <button class="btn-wizard btn-prev" id="results-restart-btn"><i class="fa-solid fa-rotate-right"></i> Start New Practice</button>
           </div>
@@ -1398,6 +1458,24 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
 
       document.getElementById("results-restart-btn").addEventListener("click", exitTestSession);
+
+      // Async save to Student Dashboard via Supabase
+      if (window.EcoDashboard && typeof window.EcoDashboard.handleQuizSave === "function") {
+        window.EcoDashboard.handleQuizSave("econ-save-status-box", {
+          subject: "economics",
+          selected_chapters: Array.from(selectedChapters),
+          total_questions: totalQ,
+          correct_answers: correctCount,
+          incorrect_answers: incorrectCount,
+          unanswered_questions: unansweredCount,
+          accuracy_percentage: pct,
+          duration_seconds: durationSecs,
+          difficulty: preferenceState.difficulty,
+          mode: preferenceState.mode,
+          chapter_breakdown: chapterBreakdown,
+          sessionStartTime: econSessionStartTime
+        });
+      }
     }
 
     // Initial Wizard Setup Call
@@ -1766,6 +1844,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let quantVisitedQuestions = new Set();
     let quantTimerInterval = null;
     let quantSecondsRemaining = 0;
+    let quantSessionStartTime = Date.now();
 
     function startQuantPracticeTestSession() {
       activeQuantQuestions = [];
@@ -1793,6 +1872,7 @@ document.addEventListener("DOMContentLoaded", () => {
       quantVisitedQuestions = new Set();
       quantVisitedQuestions.add(0);
 
+      quantSessionStartTime = Date.now();
       quantPracticeWizardCard.classList.add("hidden");
       quantTestSessionContainer.classList.remove("hidden");
       document.querySelector(".main-content-area")?.classList.add("in-test-session");
@@ -1905,6 +1985,12 @@ document.addEventListener("DOMContentLoaded", () => {
               ` : ""}
 
               <div class="live-test-footer">
+                <button class="btn-instant-help" id="quant-test-btn-instant-help" type="button" title="Get Instant Help">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/>
+                  </svg>
+                  <span>Get Instant Help</span>
+                </button>
                 <button class="btn-wizard btn-prev btn-live-prev" id="quant-test-btn-prev" ${quantCurrentQIndex === 0 ? "disabled" : ""}>Previous</button>
                 <button class="btn-wizard btn-next btn-live-next" id="quant-test-btn-next">${quantCurrentQIndex === totalQ - 1 ? "Submit & View Results" : "Save & Next"}</button>
               </div>
@@ -2029,6 +2115,25 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       }
+
+      const quantHelpBtn = document.getElementById("quant-test-btn-instant-help");
+      if (quantHelpBtn) {
+        quantHelpBtn.addEventListener("click", () => {
+          if (typeof window.openInstantHelpModal === "function") {
+            window.openInstantHelpModal({
+              question: qData.q,
+              options: qData.opts,
+              subject: "Quantitative Aptitude",
+              chapter: qData.chName || getChapterName(qData.chId, true),
+              selectedOptionIndex: quantUserAnswers[quantCurrentQIndex],
+              selectedOptionText: quantUserAnswers[quantCurrentQIndex] !== undefined ? qData.opts[quantUserAnswers[quantCurrentQIndex]] : null,
+              mode: quantPrefState.mode,
+              qNum: quantCurrentQIndex + 1,
+              totalQ: totalQ
+            });
+          }
+        });
+      }
     }
 
     function exitQuantTestSession() {
@@ -2044,14 +2149,39 @@ document.addEventListener("DOMContentLoaded", () => {
     function finishQuantTestSession() {
       if (quantTimerInterval) clearInterval(quantTimerInterval);
       let correctCount = 0;
+      let incorrectCount = 0;
+      let unansweredCount = 0;
+      const chapterBreakdown = {};
+
       activeQuantQuestions.forEach((q, idx) => {
-        if (quantUserAnswers[idx] === q.correct) {
+        const chId = q.chId || 1;
+        if (!chapterBreakdown[chId]) {
+          chapterBreakdown[chId] = {
+            name: q.chName || `Chapter ${chId}`,
+            total: 0,
+            correct: 0,
+            incorrect: 0,
+            unanswered: 0
+          };
+        }
+        chapterBreakdown[chId].total++;
+
+        const ans = quantUserAnswers[idx];
+        if (ans === undefined) {
+          unansweredCount++;
+          chapterBreakdown[chId].unanswered++;
+        } else if (ans === q.correct) {
           correctCount++;
+          chapterBreakdown[chId].correct++;
+        } else {
+          incorrectCount++;
+          chapterBreakdown[chId].incorrect++;
         }
       });
 
       const totalQ = activeQuantQuestions.length;
-      const pct = Math.round((correctCount / totalQ) * 100);
+      const pct = totalQ > 0 ? Number(((correctCount * 100.0) / totalQ).toFixed(2)) : 0;
+      const durationSecs = Math.max(1, Math.round((Date.now() - quantSessionStartTime) / 1000));
 
       quantTestSessionContainer.innerHTML = `
         <div class="test-results-card">
@@ -2060,7 +2190,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="score-total">${correctCount}/${totalQ} Correct</div>
           </div>
           <h2 class="results-title">${pct >= 70 ? "Excellent Math Performance! 🎉" : "Math Practice Session Completed"}</h2>
-          <p class="results-desc">You scored ${correctCount} out of ${totalQ} questions correctly across ${quantSelectedChapters.size} selected chapter(s).</p>
+          <p class="results-desc">You scored ${correctCount} out of ${totalQ} questions correctly (${unansweredCount} unanswered) across ${quantSelectedChapters.size} selected chapter(s).</p>
+          
+          <!-- Save status feedback box -->
+          <div id="quant-save-status-box" class="save-status-box"></div>
+
           <div class="results-actions">
             <button class="btn-wizard btn-prev" id="quant-results-restart-btn"><i class="fa-solid fa-rotate-right"></i> Start New Math Practice</button>
           </div>
@@ -2068,6 +2202,24 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
 
       document.getElementById("quant-results-restart-btn").addEventListener("click", exitQuantTestSession);
+
+      // Async save to Student Dashboard via Supabase
+      if (window.EcoDashboard && typeof window.EcoDashboard.handleQuizSave === "function") {
+        window.EcoDashboard.handleQuizSave("quant-save-status-box", {
+          subject: "quantitative",
+          selected_chapters: Array.from(quantSelectedChapters),
+          total_questions: totalQ,
+          correct_answers: correctCount,
+          incorrect_answers: incorrectCount,
+          unanswered_questions: unansweredCount,
+          accuracy_percentage: pct,
+          duration_seconds: durationSecs,
+          difficulty: quantPrefState.difficulty,
+          mode: quantPrefState.mode,
+          chapter_breakdown: chapterBreakdown,
+          sessionStartTime: quantSessionStartTime
+        });
+      }
     }
   }
 
@@ -2215,3 +2367,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.remove("initial-load");
   }, 500);
 });
+
+
+    const refreshDashBtn = document.getElementById("btn-refresh-dashboard");
+    if (refreshDashBtn) {
+      refreshDashBtn.addEventListener("click", () => {
+        if (window.EcoDashboard && typeof window.EcoDashboard.renderDashboard === "function") {
+          window.EcoDashboard.renderDashboard();
+        }
+      });
+    }

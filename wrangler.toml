@@ -2,6 +2,10 @@ name = "study-website"
 main = "src/index.js"
 compatibility_date = "2024-09-23"
 
+[[ai_search]]
+binding = "AI_SEARCH"
+instance_name = "mcq-study-assistant"
+
 [assets]
 directory = "./public"
 binding = "ASSETS"
