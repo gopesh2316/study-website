@@ -2866,11 +2866,12 @@ body::-webkit-scrollbar,
    TEST SESSION INTERFACE STYLES
    ========================================================================== */
 .test-session-container {
-  background: #ffffff;
-  border: 1px solid #e4e4e7;
-  border-radius: 20px;
+  background: #F4F4F6;
+  border: 0px !important;
+  border: none !important;
+  border-radius: 0px !important;
   padding: 0px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
+  box-shadow: none;
 }
 
 .test-session-container.hidden {
@@ -3196,6 +3197,8 @@ body::-webkit-scrollbar,
   padding: 0 !important;
   background-color: #F4F4F6 !important;
   transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  overflow: hidden !important;
+  height: 100vh !important;
 }
 
 #view-test-economics:has(#econ-test-session:not(.hidden)),
@@ -3205,7 +3208,8 @@ body::-webkit-scrollbar,
   padding: 0 !important;
   margin: 0 !important;
   flex: 1;
-  min-height: 100%;
+  height: 100vh !important;
+  min-height: 100% !important;
 }
 
 .test-session-container:not(.hidden) {
@@ -3214,8 +3218,11 @@ body::-webkit-scrollbar,
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100vh !important;
   min-height: 100vh;
+  max-height: 100vh;
   background-color: #F4F4F6;
+  overflow: hidden;
   transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -3224,10 +3231,77 @@ body::-webkit-scrollbar,
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100vh !important;
   min-height: 100vh;
+  max-height: 100vh;
   width: 100%;
   margin: 0;
-  padding: 0;
+  padding: 5px;
+  border: 0px !important;
+  border: none !important;
+  box-sizing: border-box;
+  overflow: hidden;
+  background-color: #F4F4F6;
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Calm Mode Flowing Gradient Background on the Back Layer */
+@keyframes calmGradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.live-test-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(130deg,
+      #6366f1,
+      #06b6d4,
+      #3b82f6,
+      #ec4899,
+      #8b5cf6,
+      #14b8a6,
+      #f59e0b,
+      #6366f1);
+  background-size: 350% 350%;
+  animation: calmGradientFlow 26s ease infinite;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.live-test-wrapper.live-test-theme-dark::before {
+  background: linear-gradient(130deg,
+      #4338ca,
+      #0891b2,
+      #2563eb,
+      #be185d,
+      #7c3aed,
+      #0d9488,
+      #4338ca);
+  background-size: 350% 350%;
+}
+
+.live-test-wrapper.calm-mode-active::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.live-test-wrapper.calm-mode-active .live-test-body {
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.22), 0 10px 40px rgba(0, 0, 0, 0.35);
 }
 
 /* Full Dull Red High Z-Index Overlay Covering All Containers on Leave Hover */
@@ -3257,20 +3331,44 @@ body::-webkit-scrollbar,
 }
 
 .live-test-body {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: 0.5fr 2fr 1fr;
   gap: 20px;
   padding: 24px;
   background: #F4F4F6;
   flex: 1;
-  min-height: calc(100vh - 48px);
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  width: 100% !important;
   align-items: stretch;
   box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 20px;
+  border-radius: 0px !important;
+  border: 0px !important;
+  border: none !important;
+  outline: none !important;
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease;
 }
 
 @media (max-width: 1024px) {
   .live-test-body {
     grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  .live-test-left-col,
+  .live-test-main-col,
+  .live-test-sidebar {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
   }
 }
 
@@ -3284,7 +3382,9 @@ body::-webkit-scrollbar,
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
-  min-height: calc(100vh - 96px);
+  height: 100%;
+  min-height: 100%;
+  max-height: 100%;
   box-sizing: border-box;
 }
 
@@ -3321,7 +3421,8 @@ body::-webkit-scrollbar,
 
 .live-test-left-col .live-test-timer-badge,
 .live-test-left-col .btn-leave-test,
-.live-test-left-col .btn-toggle-live-theme {
+.live-test-left-col .btn-toggle-live-theme,
+.live-test-left-col .btn-toggle-calm {
   background: #ffffff00;
   border: 0.0px solid #cbd5e1;
   color: #b3b3b3;
@@ -3346,9 +3447,30 @@ body::-webkit-scrollbar,
   color: #7c3aed;
 }
 
+.btn-toggle-calm,
+.live-test-left-col .btn-toggle-calm {
+  display: none !important;
+}
+
+.live-test-left-col .btn-toggle-calm:hover {
+  color: #38bdf8;
+  transform: translateX(2px);
+}
+
+.live-test-left-col .btn-toggle-calm.active {
+  color: #38bdf8 !important;
+  text-shadow: 0 0 16px rgba(56, 189, 248, 0.45);
+}
+
+.live-test-left-col .btn-toggle-calm.active svg {
+  stroke: #38bdf8 !important;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+}
+
 .live-test-left-col .live-test-timer-badge svg,
 .live-test-left-col .btn-leave-test svg,
-.live-test-left-col .btn-toggle-live-theme svg {
+.live-test-left-col .btn-toggle-live-theme svg,
+.live-test-left-col .btn-toggle-calm svg {
   width: 1em;
   height: 1em;
   stroke: currentColor;
@@ -3358,19 +3480,55 @@ body::-webkit-scrollbar,
   transition: stroke 0.15s ease;
 }
 
-/* Middle Column (50%) */
+/* Middle Column (50%) - Dynamic height to full screen resolution, scrollable when content is large */
 .live-test-main-col {
   background: #ffffff;
-  padding: 32px 36px 100px 36px;
+  padding: 32px 36px 0 36px;
   display: flex;
   flex-direction: column;
-  border: 1px solid #e2e8f0;
-  border-radius: 23px;
+  border: 0px solid #e2e8f0;
+  border-radius: 35px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
   position: relative;
-  overflow: hidden;
-  min-height: calc(100vh - 96px);
-  box-sizing: border-border;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+/* Custom sleek scrollbar for main test column */
+.live-test-main-col::-webkit-scrollbar {
+  width: 6px;
+}
+
+.live-test-main-col::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.live-test-main-col::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+}
+
+.live-test-main-col::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+.live-test-theme-dark .live-test-main-col {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.live-test-theme-dark .live-test-main-col::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.live-test-theme-dark .live-test-main-col::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .live-q-meta-row {
@@ -3533,19 +3691,28 @@ body::-webkit-scrollbar,
   color: #b91c1c;
 }
 
-/* Live Test Bottom Footer Actions */
+/* Live Test Bottom Footer Actions - Sticky bottom inside scrollable card */
 .live-test-footer {
-  position: absolute;
+  position: sticky;
   bottom: 0;
   left: 0;
   right: 0;
-  background: #f5f5f5b5;
-  padding: 16px 19px;
+  margin-top: auto;
+  margin-left: -36px;
+  margin-right: -36px;
+  margin-bottom: 0;
+  background: rgba(245, 245, 245, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 15px 20px 19px 20px;
   border-top: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 14px;
+  z-index: 20;
+  border-radius: 0 0px 35px 35px;
+
 }
 
 .live-test-footer .btn-wizard {
@@ -3635,16 +3802,21 @@ body::-webkit-scrollbar,
   display: flex;
   flex-direction: column;
   gap: 20px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  border: 0px solid #e2e8f0;
+  border-radius: 35px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   height: fit-content;
+  max-height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
 }
 
 .palette-summary-box {
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  border-radius: 12px;
+  background: #f4f4f6;
+  border: 1px solid #f4f4f6;
+  border-radius: 120px;
   padding: 12px 14px;
   display: flex;
   align-items: center;
@@ -3659,68 +3831,83 @@ body::-webkit-scrollbar,
   font-size: 0.74rem;
   font-weight: 600;
   color: #475569;
+  background: white;
+  padding: 7px 12px 7px 7px;
+  border-radius: 42px;
 }
 
 .status-num {
   font-size: 0.76rem;
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 40px;
   min-width: 16px;
   text-align: center;
 }
 
 .palette-status-pill.answered .status-num {
-  background: #22c55e;
-  color: #ffffff;
+  background: #d2ffe0;
+  color: black;
 }
 
 .palette-status-pill.skipped .status-num {
-  background: #7c3aed;
-  color: #ffffff;
+  background: #ebdeff;
+  color: #000000;
 }
 
 .palette-status-pill.not-visited .status-num {
-  background: #cbd5e1;
-  color: #334155;
+  background: #f4f4f6;
+  color: #000000;
 }
 
 /* Palette Grid */
 .palette-grid-container {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
 }
 
 .palette-grid-btn {
-  background: #ffffff;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
+  background: #f4f4f6;
+  border: 1.5px solid #f4f4f6;
+  border-radius: 100px;
   height: 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
   cursor: pointer;
   position: relative;
-  transition: all 0.15s ease;
+  transition: all 0.0s ease;
 }
 
 .palette-grid-btn:hover {
-  border-color: #7c3aed;
+  border-color: #e9e9e9;
+  background: #e9e9e9;
 }
 
 .palette-btn-num {
   font-size: 0.9rem;
   font-weight: 700;
   color: #1e293b;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 0;
+  padding: 0;
 }
 
 .palette-btn-dot {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  margin-top: 2px;
   background: transparent;
 }
 
@@ -4017,6 +4204,7 @@ body::-webkit-scrollbar,
   background-color: #121212 !important;
   background: #121212 !important;
   color: #f1f5f9 !important;
+  border-radius: 0px !important;
 }
 
 /* Container Backgrounds & Smooth Edge Styling */
@@ -4043,9 +4231,11 @@ body::-webkit-scrollbar,
 }
 
 .live-test-theme-dark .live-test-footer {
-  background: #282828 !important;
-  padding: 16px 19px !important;
-  border-top: 1px solid #2c2c2c !important;
+  background: rgb(34 34 34 / 94%) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 16px 20px 18px 20px !important;
+  border-top: 1px solid #2a2a2a !important;
 }
 
 .live-test-theme-dark .btn-live-prev {
@@ -4123,7 +4313,8 @@ body::-webkit-scrollbar,
 /* Badges & Buttons in Dark Theme */
 .live-test-theme-dark .live-test-timer-badge,
 .live-test-theme-dark .btn-leave-test,
-.live-test-theme-dark .btn-toggle-live-theme {
+.live-test-theme-dark .btn-toggle-live-theme,
+.live-test-theme-dark .btn-toggle-calm {
   color: #94a3b8 !important;
 }
 
@@ -4135,10 +4326,19 @@ body::-webkit-scrollbar,
   color: #ef4444 !important;
 }
 
+.live-test-theme-dark .btn-toggle-calm:hover {
+  color: #38bdf8 !important;
+}
+
+.live-test-theme-dark .btn-toggle-calm.active {
+  color: #38bdf8 !important;
+  text-shadow: 0 0 16px rgba(56, 189, 248, 0.45);
+}
+
 /* Question Palette Sidebar in Dark Mode */
 .live-test-theme-dark .palette-summary-box {
-  background: #1e1b4b !important;
-  border-color: #312e81 !important;
+  background: #121212 !important;
+  border-color: #121212 !important;
 }
 
 .live-test-theme-dark .palette-status-pill {
@@ -5459,7 +5659,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 .btn-instant-help:hover:not(:disabled) {
   background-color: #f4f4f5;
   border-color: #d4d4d8;
-  transform: translateY(-1px);
+  transform: scale(0.99);
 }
 
 .btn-instant-help:disabled {
@@ -6108,6 +6308,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
     opacity: 0;
     transform: translateY(-6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -6301,10 +6502,14 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 @keyframes typingPulse {
-  0%, 80%, 100% {
+
+  0%,
+  80%,
+  100% {
     transform: scale(0.6);
     opacity: 0.4;
   }
+
   40% {
     transform: scale(1.1);
     opacity: 1;
@@ -6445,4 +6650,783 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   align-items: flex-start;
   gap: 0.5rem;
   line-height: 1.4;
+}
+
+/* Hide topic tag */
+.live-q-tag-topic {
+  display: none !important;
+}
+
+/* Meta Header & Difficulty Shape */
+.live-q-meta-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  width: 100%;
+}
+
+.live-q-diff-shape {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 4px;
+  border-radius: 6px;
+  line-height: 1;
+  cursor: default;
+}
+
+/* Instant Help Tooltip & Muted State */
+.instant-help-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-right: auto;
+}
+
+.instant-help-wrapper.is-muted {
+  cursor: not-allowed;
+}
+
+.btn-instant-help.muted {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(0.5) !important;
+  transform: none !important;
+  pointer-events: none;
+}
+
+.instant-help-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  background: #18181b;
+  color: #ffffff;
+  padding: 7px 13px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 99999;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+}
+
+.instant-help-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 28px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #18181b transparent transparent transparent;
+}
+
+.instant-help-wrapper.is-muted:hover .instant-help-tooltip,
+.instant-help-wrapper.is-muted.show-tooltip .instant-help-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.live-test-theme-dark .instant-help-tooltip {
+  background: #27272a;
+  color: #f4f4f5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.live-test-theme-dark .instant-help-tooltip::after {
+  border-color: #27272a transparent transparent transparent;
+}
+
+
+/* ============================================================
+   OPTION FEEDBACK COLORS (Green for Correct, Red for Incorrect)
+   ============================================================ */
+.live-option-card.option-correct {
+  border-color: #16a34a !important;
+  background: #f0fdf4 !important;
+}
+
+.live-option-card.option-correct .live-option-text,
+.live-option-card.option-correct .live-option-num {
+  color: #15803d !important;
+  font-weight: 700 !important;
+}
+
+.live-option-card.option-correct .radio-outer {
+  border-color: #16a34a !important;
+  background: #16a34a !important;
+}
+
+.live-option-card.option-correct .radio-inner {
+  background: #ffffff !important;
+  opacity: 1 !important;
+}
+
+.live-option-card.option-wrong {
+  border-color: #dc2626 !important;
+  background: #fef2f2 !important;
+}
+
+.live-option-card.option-wrong .live-option-text,
+.live-option-card.option-wrong .live-option-num {
+  color: #b91c1c !important;
+  font-weight: 700 !important;
+}
+
+.live-option-card.option-wrong .radio-outer {
+  border-color: #dc2626 !important;
+  background: #dc2626 !important;
+}
+
+.live-option-card.option-wrong .radio-inner {
+  background: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Dark Theme Correct / Wrong Option Colors */
+.live-test-theme-dark .live-option-card.option-correct {
+  border-color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.14) !important;
+}
+
+.live-test-theme-dark .live-option-card.option-correct .live-option-text,
+.live-test-theme-dark .live-option-card.option-correct .live-option-num {
+  color: #4ade80 !important;
+}
+
+.live-test-theme-dark .live-option-card.option-correct .radio-outer {
+  border-color: #22c55e !important;
+  background: #22c55e !important;
+}
+
+.live-test-theme-dark .live-option-card.option-wrong {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.14) !important;
+}
+
+.live-test-theme-dark .live-option-card.option-wrong .live-option-text,
+.live-test-theme-dark .live-option-card.option-wrong .live-option-num {
+  color: #f87171 !important;
+}
+
+.live-test-theme-dark .live-option-card.option-wrong .radio-outer {
+  border-color: #ef4444 !important;
+  background: #ef4444 !important;
+}
+
+/* ============================================================
+   FULL RED LEAVE CONFIRMATION OVERLAY & MODAL
+   ============================================================ */
+.live-test-leave-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(220, 38, 38, 0.92);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.live-test-leave-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.leave-confirm-card {
+  background: #ffffff00;
+  color: #18181b;
+  padding: 34px 30px;
+  border-radius: 22px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.38);
+  transform: scale(0.92) translateY(12px);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.live-test-leave-overlay.active .leave-confirm-card {
+  transform: scale(1) translateY(0);
+}
+
+.leave-confirm-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #ffffff1f;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+}
+
+.leave-confirm-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.leave-confirm-desc {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+.leave-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-leave-cancel {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.94rem;
+  background: #f1f5f921;
+  color: #ffffff;
+  border: 1.5px solid #e14f4f;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-leave-cancel:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  transform: scale(0.985);
+}
+
+.btn-leave-confirm {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.94rem;
+  background: #dc2626;
+  color: #ffffff;
+  border: 1.5px solid #dc2626;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
+  transition: all 0.15s ease;
+}
+
+.btn-leave-confirm:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  transform: scale(0.985);
+}
+
+/* Dark mode for leave modal */
+.live-test-theme-dark .leave-confirm-card {
+  background: #18181b00;
+  color: #f4f4f5;
+  border: 0px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65);
+}
+
+.live-test-theme-dark .leave-confirm-icon {
+  background: rgb(255 255 255 / 14%);
+  color: #ffffff;
+}
+
+.live-test-theme-dark .leave-confirm-title {
+  color: #f4f4f5;
+}
+
+.live-test-theme-dark .leave-confirm-desc {
+  color: #a1a1aa;
+}
+
+.live-test-theme-dark .btn-leave-cancel {
+  background: #27272a;
+  color: #e4e4e7;
+  border-color: #3f3f46;
+}
+
+.live-test-theme-dark .btn-leave-cancel:hover {
+  background: #3f3f46;
+  color: #ffffff;
+}
+
+/* ============================================================
+   IN-PLACE INSTANT HELP IN LIVE TEST MAIN COLUMN
+   ============================================================ */
+.live-test-main-col.in-instant-help {
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+}
+
+.live-q-normal-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  box-sizing: border-box;
+}
+
+.instant-help-dialog.instant-help-inline {
+  position: relative;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  flex: 1;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background-color: #ffffff;
+  color: #0f172a;
+  animation: none;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+}
+
+.btn-instant-help-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-instant-help-back:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  transform: translateX(-2px);
+}
+
+/* AI Word-by-Word Blur Animation */
+@keyframes aiWordBlurIn {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(3px);
+  }
+
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0);
+  }
+}
+
+.ai-word-blur-in {
+  display: inline;
+  animation: aiWordBlurIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: filter, opacity, transform;
+}
+
+/* Sticky Bottom Follow-Up Dock */
+.instant-help-inline .instant-help-followup-dock {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 50 !important;
+  margin-top: auto !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid #e2e8f0 !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  padding: 12px 24px 16px 24px !important;
+  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.05) !important;
+}
+
+.instant-help-inline .instant-help-followup-dock .followup-textarea {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  color: #0f172a;
+}
+
+/* Light Theme Styling for Instant Help Content */
+.instant-help-inline .instant-help-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 18px 24px 14px 24px;
+}
+
+.instant-help-inline .instant-help-title {
+  color: #0f172a;
+}
+
+.instant-help-inline .instant-help-close-btn {
+  color: #64748b;
+}
+
+.instant-help-inline .instant-help-close-btn:hover {
+  color: #0f172a;
+}
+
+.instant-help-inline .instant-help-content-scroll {
+  padding: 18px 24px;
+  background-color: #ffffff;
+}
+
+.instant-help-inline .instant-help-q-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+}
+
+.instant-help-inline .instant-help-q-text {
+  color: #0f172a;
+}
+
+.instant-help-inline .q-meta-subject {
+  color: #64748b;
+}
+
+.instant-help-inline .instant-help-q-opt-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.instant-help-inline .instant-help-q-opt-item.opt-selected {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+}
+
+.instant-help-inline .instant-help-sec {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.instant-help-inline .instant-help-sec-header {
+  color: #0f172a;
+}
+
+.instant-help-inline .instant-help-sec-text {
+  color: #334155;
+}
+
+.instant-help-inline .instant-help-source-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+}
+
+.instant-help-inline .source-card-title {
+  color: #0f172a;
+}
+
+.instant-help-inline .source-card-desc {
+  color: #475569;
+}
+
+.instant-help-inline .source-card-details {
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
+.instant-help-inline .instant-help-passage-panel {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+}
+
+.instant-help-inline .passage-panel-text {
+  color: #334155;
+}
+
+.instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+}
+
+.instant-help-inline .instant-help-chat-turn.assistant-turn .chat-text {
+  color: #0f172a;
+}
+
+.instant-help-inline .instant-help-chat-turn.user-turn .chat-bubble {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* ============================================================
+   DARK THEME OVERRIDES FOR INLINE INSTANT HELP
+   ============================================================ */
+.live-test-theme-dark .instant-help-dialog.instant-help-inline {
+  background-color: #1A1A1A !important;
+  color: #f1f5f9 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-header {
+  background-color: #1A1A1A !important;
+  border-bottom: 1px solid #2a2a2a !important;
+}
+
+.live-test-theme-dark .btn-instant-help-back {
+  background: #262626 !important;
+  border-color: #383838 !important;
+  color: #e2e8f0 !important;
+}
+
+.live-test-theme-dark .btn-instant-help-back:hover {
+  background: #333333 !important;
+  color: #ffffff !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-title {
+  color: #f8fafc !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-close-btn {
+  color: #a1a1aa !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-close-btn:hover {
+  color: #ffffff !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-content-scroll {
+  background-color: #1A1A1A !important;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-q-box {
+  background: #222222 !important;
+  border-color: #333333 !important;
+  color: #f1f5f9 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-q-text {
+  color: #f8fafc !important;
+}
+
+.live-test-theme-dark .instant-help-inline .q-meta-subject {
+  color: #94a3b8 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-q-opt-item {
+  background: #282828 !important;
+  border-color: #383838 !important;
+  color: #e2e8f0 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-q-opt-item.opt-selected {
+  background: rgba(37, 99, 235, 0.22) !important;
+  border-color: #3b82f6 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-sec {
+  background: #222222 !important;
+  border-color: #333333 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-sec-header {
+  color: #f8fafc !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-sec-text {
+  color: #e2e8f0 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-source-card {
+  background: #222222 !important;
+  border-color: #333333 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .source-card-title {
+  color: #f8fafc !important;
+}
+
+.live-test-theme-dark .instant-help-inline .source-card-desc {
+  color: #94a3b8 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .source-card-details {
+  border-color: #333333 !important;
+  color: #94a3b8 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-passage-panel {
+  background: #1c1c1c !important;
+  border-color: #383838 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .passage-panel-text {
+  color: #e2e8f0 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
+  background: #222222 !important;
+  border-color: #333333 !important;
+  color: #f8fafc !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-text {
+  color: #e2e8f0 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-chat-turn.user-turn .chat-bubble {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock {
+  background: rgba(26, 26, 26, 0.96) !important;
+  border-top: 1px solid #2e2e2e !important;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea {
+  background: #222222 !important;
+  border-color: #383838 !important;
+  color: #f8fafc !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea:focus {
+  border-color: #3b82f6 !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-char-count,
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-shortcut-hint,
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-turn-badge {
+  color: #94a3b8 !important;
+}
+
+/* ============================================================
+   FOLLOWUP INPUT PILL, BUBBLE RADIUS & TRANSPARENCY CUSTOMIZATIONS
+   ============================================================ */
+
+/* Hide chat-sender-tag completely */
+.chat-sender-tag {
+  display: none !important;
+}
+
+/* User chat bubble: 50px pill with bottom-right tail preserved */
+.instant-help-chat-turn.user-turn .chat-bubble,
+.instant-help-inline .instant-help-chat-turn.user-turn .chat-bubble {
+  border-radius: 50px 50px 4px 50px !important;
+  padding: 10px 20px !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25) !important;
+}
+
+/* Follow-up input row: relative container with pill textarea */
+.followup-input-row,
+.instant-help-inline .followup-input-row {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  gap: 0 !important;
+}
+
+.followup-textarea,
+.instant-help-inline .followup-textarea,
+.instant-help-inline .instant-help-followup-dock .followup-textarea,
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea {
+  width: 100% !important;
+  border-radius: 100px !important;
+  border: 0px !important;
+  border: none !important;
+  outline: none !important;
+  padding: 12px 52px 12px 22px !important;
+  line-height: 1.4 !important;
+  min-height: 46px !important;
+  max-height: 120px !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+}
+
+/* Send button placed cleanly inside the right of the input */
+.btn-followup-send,
+.instant-help-inline .btn-followup-send {
+  position: absolute !important;
+  right: 7px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.16s ease !important;
+  z-index: 10 !important;
+}
+
+.btn-followup-send:hover,
+.instant-help-inline .btn-followup-send:hover {
+  background: #1d4ed8 !important;
+  transform: translateY(-50%) scale(1.06) !important;
+}
+
+.btn-followup-send:disabled,
+.instant-help-inline .btn-followup-send:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  transform: translateY(-50%) !important;
+}
+
+.btn-followup-send span,
+.instant-help-inline .btn-followup-send span {
+  display: none !important;
+}
+
+.btn-followup-send svg,
+.instant-help-inline .btn-followup-send svg {
+  width: 17px !important;
+  height: 17px !important;
+  stroke: currentColor !important;
+}
+
+/* Dark theme transparent backgrounds & border none for explanation, source card, and assistant bubble */
+.live-test-theme-dark .instant-help-inline .instant-help-sec,
+.live-test-theme-dark .instant-help-inline .instant-help-source-card,
+.live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }

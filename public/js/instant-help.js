@@ -1,15 +1,17 @@
 /**
- * Instant Help AI Modal Module
+ * Instant Help AI Inline Module
  * Provides lightweight, contextual AI-powered conceptual assistance during live tests.
  * 
  * Features:
+ * - In-place transformation of .live-test-main-col with smooth GSAP animations
+ * - Word-by-word streaming answers with smooth blur-in effect
+ * - Sticky bottom follow-up message input dock
  * - Student-Friendly Source Viewer with expandable passage drawer
- * - Interactive multi-turn follow-up chat in the same popup ("STILL HAVE A DOUBT?")
+ * - Interactive multi-turn follow-up chat ("STILL HAVE A DOUBT?")
  * - Automatic preservation of question, passage, source, and context
  * - Free guest access without requiring authentication
- * - Strict Exam Mode protections across all turns
+ * - Full Dark & Light mode compatibility
  * - Does not pause, reset, or interfere with test timer or answers
- * - Temporary popup memory (no database persistence)
  */
 
 (function () {
@@ -25,6 +27,63 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  /**
+   * Streams text word-by-word into targetEl with a smooth blur appearing effect.
+   */
+  function streamWordByWord(targetEl, text, onWordAdded, onComplete, speedMs = 28) {
+    if (!targetEl || !text) {
+      if (typeof onComplete === 'function') onComplete();
+      return;
+    }
+
+    targetEl.innerHTML = '';
+    const tokens = String(text).split(/(\s+)/);
+    let idx = 0;
+
+    function step() {
+      if (idx >= tokens.length) {
+        if (typeof onComplete === 'function') onComplete();
+        return;
+      }
+
+      const token = tokens[idx];
+      idx++;
+
+      if (!token) {
+        setTimeout(step, speedMs);
+        return;
+      }
+
+      if (token.trim() === '') {
+        if (token.includes('\n')) {
+          targetEl.appendChild(document.createElement('br'));
+        } else {
+          targetEl.appendChild(document.createTextNode(token));
+        }
+      } else {
+        const span = document.createElement('span');
+        span.className = 'ai-word-blur-in';
+        span.textContent = token;
+        targetEl.appendChild(span);
+
+        if (typeof gsap !== 'undefined' && gsap.fromTo) {
+          gsap.fromTo(span,
+            { opacity: 0, filter: 'blur(8px)', y: 3 },
+            { opacity: 1, filter: 'blur(0px)', y: 0, duration: 0.35, ease: 'power2.out' }
+          );
+        }
+      }
+
+      if (typeof onWordAdded === 'function') {
+        onWordAdded();
+      }
+
+      setTimeout(step, speedMs);
+    }
+
+    step();
   }
 
   /**
@@ -60,7 +119,6 @@
       friendlyTitle = sourceRef;
     }
 
-    // Handle case where title is just a raw markdown file name e.g. "unit2-demand.md"
     if (friendlyTitle && friendlyTitle.endsWith('.md')) {
       filename = friendlyTitle;
       friendlyTitle = 'Theory of Demand & Supply Study Material';
@@ -83,7 +141,6 @@
   }
 
   function openInstantHelpModal(context) {
-    // Prevent duplicate modal instances or concurrent initial requests
     if (document.getElementById('instant-help-modal') || isInitialRequestInFlight) {
       return;
     }
@@ -102,7 +159,6 @@
 
     const isExam = mode === 'exam';
 
-    // Temporary popup session state
     const popupSession = {
       question,
       options,
@@ -114,106 +170,209 @@
       initialData: null,
       retrievedPassage: null,
       sourceReference: null,
-      conversationHistory: [], // [{ role: 'assistant', content: ... }, ...]
+      conversationHistory: [],
       userTurnsCount: 0,
       maxUserTurns: 3,
       isFollowUpInFlight: false
     };
 
-    // 1. Create Modal Container
-    const overlay = document.createElement('div');
-    overlay.id = 'instant-help-modal';
-    overlay.className = 'instant-help-overlay';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-labelledby', 'instant-help-title');
+    // Locate active live-test-main-col to transform in place
+    const activeSession = document.querySelector('.test-session-container:not(.hidden)');
+    const mainCol = activeSession ? activeSession.querySelector('.live-test-main-col') : document.querySelector('.live-test-main-col');
+    const normalContent = mainCol ? mainCol.querySelector('.live-q-normal-content') : null;
 
-    // 2. Build Base Skeleton
-    overlay.innerHTML = `
-      <div class="instant-help-dialog">
-        <!-- Dialog Header -->
-        <div class="instant-help-header">
-          <div class="instant-help-title-group">
-            <div class="instant-help-icon-wrap">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/>
-              </svg>
-            </div>
-            <div>
-              <h3 class="instant-help-title" id="instant-help-title">Instant Help</h3>
-              <span class="instant-help-badge ${isExam ? 'badge-exam' : 'badge-practice'}">
-                ${isExam ? 'Exam Mode • Conceptual Hints' : 'Practice Mode • Concept Guide'}
-              </span>
-            </div>
-          </div>
-          <button class="instant-help-close-btn" id="instant-help-x-btn" aria-label="Close instant help">&times;</button>
-        </div>
+    // 1. Create Instant Help Element (with all standard ARIA attributes)
+    const container = document.createElement('div');
+    container.id = 'instant-help-modal';
+    container.className = 'instant-help-dialog instant-help-inline';
+    container.setAttribute('role', 'dialog');
+    container.setAttribute('aria-modal', 'true');
+    container.setAttribute('aria-labelledby', 'instant-help-title');
 
-        <!-- Scrollable Inner Content Area -->
-        <div class="instant-help-content-scroll" id="instant-help-content-scroll">
-          <!-- Question Reference Box -->
-          <div class="instant-help-q-box">
-            <div class="instant-help-q-meta">
-              <span class="q-meta-pill">Q${escapeHtml(qNum)} of ${escapeHtml(totalQ)}</span>
-              <span class="q-meta-subject">${escapeHtml(subject)} &bull; ${escapeHtml(chapter)}</span>
-            </div>
-            <p class="instant-help-q-text">${escapeHtml(question)}</p>
-
-            ${Array.isArray(options) && options.length > 0 ? `
-              <div class="instant-help-q-options">
-                ${options.map((opt, idx) => {
-                  const isSelected = selectedOptionIndex === idx;
-                  const letter = String.fromCharCode(65 + idx);
-                  return `
-                    <div class="instant-help-q-opt-item ${isSelected ? 'opt-selected' : ''}">
-                      <span class="opt-letter">${letter}</span>
-                      <span class="opt-label">${escapeHtml(opt)}</span>
-                      ${isSelected ? `<span class="opt-tag">Selected</span>` : ''}
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-            ` : ''}
-          </div>
-
-          <!-- Dynamic Body Area -->
-          <div class="instant-help-body" id="instant-help-dynamic-body">
-            <!-- Populated by JS -->
-          </div>
-        </div>
-
-        <!-- Dialog Footer -->
-        <div class="instant-help-footer">
-          <div class="instant-help-timer-status">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
+    container.innerHTML = `
+      <!-- Dialog Header -->
+      <div class="instant-help-header">
+        <div class="instant-help-title-group">
+          <button class="btn-instant-help-back" id="instant-help-back-btn" type="button" title="Back to Question">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            <span>Test timer is running normally</span>
+            <span>Back to Question</span>
+          </button>
+          <div class="instant-help-icon-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/>
+            </svg>
           </div>
-          <button class="btn-instant-help-close" id="instant-help-footer-close-btn" type="button">Close</button>
+          <div>
+            <h3 class="instant-help-title" id="instant-help-title">Instant Help</h3>
+            <span class="instant-help-badge ${isExam ? 'badge-exam' : 'badge-practice'}">
+              ${isExam ? 'Exam Mode • Conceptual Hints' : 'Practice Mode • Concept Guide'}
+            </span>
+          </div>
+        </div>
+        <button class="instant-help-close-btn" id="instant-help-x-btn" aria-label="Close instant help">&times;</button>
+      </div>
+
+      <!-- Scrollable Middle Section -->
+      <div class="instant-help-content-scroll" id="instant-help-content-scroll">
+        <!-- Question Reference Box -->
+        <div class="instant-help-q-box">
+          <div class="instant-help-q-meta">
+            <span class="q-meta-pill">Q${escapeHtml(qNum)} of ${escapeHtml(totalQ)}</span>
+            <span class="q-meta-subject">${escapeHtml(subject)} &bull; ${escapeHtml(chapter)}</span>
+          </div>
+          <p class="instant-help-q-text">${escapeHtml(question)}</p>
+
+          ${Array.isArray(options) && options.length > 0 ? `
+            <div class="instant-help-q-options">
+              ${options.map((opt, idx) => {
+      const isSelected = selectedOptionIndex === idx;
+      const letter = String.fromCharCode(65 + idx);
+      return `
+                  <div class="instant-help-q-opt-item ${isSelected ? 'opt-selected' : ''}">
+                    <span class="opt-letter">${letter}</span>
+                    <span class="opt-label">${escapeHtml(opt)}</span>
+                    ${isSelected ? `<span class="opt-tag">Selected</span>` : ''}
+                  </div>
+                `;
+    }).join('')}
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Dynamic Body Area -->
+        <div class="instant-help-body" id="instant-help-dynamic-body">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- STICKY BOTTOM FOLLOW-UP INPUT DOCK ("STILL HAVE A DOUBT?") -->
+      <div class="instant-help-followup-dock" id="instant-help-followup-dock">
+        <div class="followup-dock-header">
+          <div class="followup-dock-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <span>STILL HAVE A DOUBT?</span>
+          </div>
+          <span class="followup-turn-badge" id="followup-turn-badge">3 follow-ups left</span>
+        </div>
+
+        <div class="followup-input-row">
+          <textarea
+            id="instant-help-followup-input"
+            class="followup-textarea"
+            placeholder="Ask a follow-up about this explanation..."
+            rows="1"
+            maxlength="1000"
+            aria-label="Ask a follow-up about this explanation"
+          ></textarea>
+          <button
+            id="instant-help-followup-send-btn"
+            class="btn-followup-send"
+            type="button"
+            title="Send follow-up question"
+            aria-label="Send follow-up question"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="19" x2="12" y2="5"></line>
+              <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <div class="followup-meta-row">
+          <span class="followup-shortcut-hint">Enter to send &bull; Shift+Enter for new line</span>
+          <span class="followup-char-count" id="followup-char-count">0 / 1000</span>
         </div>
       </div>
     `;
 
-    document.body.appendChild(overlay);
+    // 2. Attach container to DOM and animate transformation
+    if (mainCol) {
+      mainCol.classList.add('in-instant-help');
+      if (normalContent) {
+        if (typeof gsap !== 'undefined' && gsap.to) {
+          gsap.to(normalContent, {
+            opacity: 0,
+            y: -18,
+            duration: 0.25,
+            ease: 'power2.inOut',
+            onComplete: () => {
+              normalContent.style.display = 'none';
+              mainCol.appendChild(container);
+              gsap.fromTo(container,
+                { opacity: 0, y: 18 },
+                { opacity: 1, y: 0, duration: 0.32, ease: 'power2.out' }
+              );
+            }
+          });
+        } else {
+          normalContent.style.display = 'none';
+          mainCol.appendChild(container);
+        }
+      } else {
+        mainCol.appendChild(container);
+      }
+    } else {
+      // Fallback for isolated unit test / non-grid environment
+      const overlay = document.createElement('div');
+      overlay.className = 'instant-help-overlay';
+      overlay.appendChild(container);
+      document.body.appendChild(overlay);
+    }
 
-    const dynamicBody = overlay.querySelector('#instant-help-dynamic-body');
-    const scrollContainer = overlay.querySelector('#instant-help-content-scroll');
-    const closeXBtn = overlay.querySelector('#instant-help-x-btn');
-    const closeFooterBtn = overlay.querySelector('#instant-help-footer-close-btn');
+    const dynamicBody = container.querySelector('#instant-help-dynamic-body');
+    const scrollContainer = container.querySelector('#instant-help-content-scroll');
+    const backBtn = container.querySelector('#instant-help-back-btn');
+    const closeXBtn = container.querySelector('#instant-help-x-btn');
 
-    // 3. Close Handler
+    // 3. Close & Restore Handler
     function closeModal() {
       isInitialRequestInFlight = false;
       popupSession.isFollowUpInFlight = false;
-      overlay.remove();
       document.removeEventListener('keydown', handleKeyDown);
+
+      if (mainCol && container.parentNode === mainCol) {
+        if (typeof gsap !== 'undefined' && gsap.to) {
+          gsap.to(container, {
+            opacity: 0,
+            y: 18,
+            duration: 0.22,
+            ease: 'power2.in',
+            onComplete: () => {
+              container.remove();
+              mainCol.classList.remove('in-instant-help');
+              if (normalContent) {
+                normalContent.style.display = '';
+                gsap.fromTo(normalContent,
+                  { opacity: 0, y: -18 },
+                  { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' }
+                );
+              }
+            }
+          });
+        } else {
+          container.remove();
+          mainCol.classList.remove('in-instant-help');
+          if (normalContent) normalContent.style.display = '';
+        }
+      } else {
+        if (container.parentElement && container.parentElement.classList.contains('instant-help-overlay')) {
+          container.parentElement.remove();
+        } else {
+          container.remove();
+        }
+      }
     }
 
     function handleKeyDown(e) {
       if (e.key === 'Escape') {
-        const passagePanel = overlay.querySelector('#instant-help-passage-panel');
+        const passagePanel = container.querySelector('#instant-help-passage-panel');
         if (passagePanel && !passagePanel.hidden) {
           closePassagePanel();
           return;
@@ -223,13 +382,8 @@
     }
 
     document.addEventListener('keydown', handleKeyDown);
-    closeXBtn.addEventListener('click', closeModal);
-    closeFooterBtn.addEventListener('click', closeModal);
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        closeModal();
-      }
-    });
+    if (backBtn) backBtn.addEventListener('click', closeModal);
+    if (closeXBtn) closeXBtn.addEventListener('click', closeModal);
 
     // 4. Render Loading State
     function renderLoading() {
@@ -244,8 +398,8 @@
 
     // Close helper for passage viewer panel
     function closePassagePanel() {
-      const passagePanel = overlay.querySelector('#instant-help-passage-panel');
-      const toggleBtn = overlay.querySelector('#btn-toggle-passage');
+      const passagePanel = container.querySelector('#instant-help-passage-panel');
+      const toggleBtn = container.querySelector('#btn-toggle-passage');
       if (passagePanel) {
         passagePanel.hidden = true;
       }
@@ -264,9 +418,9 @@
 
     // Open helper for passage viewer panel
     function openPassagePanel() {
-      const passagePanel = overlay.querySelector('#instant-help-passage-panel');
-      const toggleBtn = overlay.querySelector('#btn-toggle-passage');
-      const closePassageBtn = overlay.querySelector('#btn-close-passage');
+      const passagePanel = container.querySelector('#instant-help-passage-panel');
+      const toggleBtn = container.querySelector('#btn-toggle-passage');
+      const closePassageBtn = container.querySelector('#btn-close-passage');
       if (passagePanel) {
         passagePanel.hidden = false;
       }
@@ -285,7 +439,7 @@
       }
     }
 
-    // 5. Render Success State with Feature 1 (Source Card) and Feature 2 (Follow-up Chat)
+    // 5. Render Success State with Word-by-Word Streaming Answers & Blur-In Effect
     function renderSuccess(data) {
       popupSession.initialData = data;
       popupSession.retrievedPassage = data.passage || null;
@@ -299,7 +453,7 @@
       dynamicBody.innerHTML = `
         <div class="instant-help-result-content">
           <!-- Explanation Section -->
-          <div class="instant-help-sec">
+          <div class="instant-help-sec" id="instant-help-exp-sec">
             <div class="instant-help-sec-header">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -308,19 +462,19 @@
               </svg>
               <span>Conceptual Explanation</span>
             </div>
-            <p class="instant-help-sec-text">${escapeHtml(data.explanation)}</p>
+            <p class="instant-help-sec-text" id="stream-explanation-text"></p>
           </div>
 
           ${data.reasoning_example ? `
             <!-- Reasoning & Example Section -->
-            <div class="instant-help-sec">
+            <div class="instant-help-sec" id="instant-help-reasoning-sec" style="opacity: 0;">
               <div class="instant-help-sec-header">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
                 <span>Reasoning &amp; Example</span>
               </div>
-              <p class="instant-help-sec-text">${escapeHtml(data.reasoning_example)}</p>
+              <p class="instant-help-sec-text" id="stream-reasoning-text"></p>
             </div>
           ` : ''}
 
@@ -383,52 +537,28 @@
               <!-- Follow-up message pairs dynamically appended here -->
             </div>
           </div>
-
-          <!-- FEATURE 2: Docked Follow-Up Input ("STILL HAVE A DOUBT?") -->
-          <div class="instant-help-followup-dock" id="instant-help-followup-dock">
-            <div class="followup-dock-header">
-              <div class="followup-dock-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-                <span>STILL HAVE A DOUBT?</span>
-              </div>
-              <span class="followup-turn-badge" id="followup-turn-badge">3 follow-ups left</span>
-            </div>
-
-            <div class="followup-input-row">
-              <textarea
-                id="instant-help-followup-input"
-                class="followup-textarea"
-                placeholder="Ask a follow-up about this explanation..."
-                rows="1"
-                maxlength="1000"
-                aria-label="Ask a follow-up about this explanation"
-              ></textarea>
-              <button
-                id="instant-help-followup-send-btn"
-                class="btn-followup-send"
-                type="button"
-                title="Send follow-up question"
-                aria-label="Send follow-up question"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-                <span>Send</span>
-              </button>
-            </div>
-
-            <div class="followup-meta-row">
-              <span class="followup-shortcut-hint">Enter to send &bull; Shift+Enter for new line</span>
-              <span class="followup-char-count" id="followup-char-count">0 / 1000</span>
-            </div>
-          </div>
         </div>
       `;
+
+      // Word-by-word streaming generation with blur effect for initial explanation
+      const expTarget = dynamicBody.querySelector('#stream-explanation-text');
+      const reasoningSec = dynamicBody.querySelector('#instant-help-reasoning-sec');
+      const reasoningTarget = dynamicBody.querySelector('#stream-reasoning-text');
+
+      streamWordByWord(expTarget, data.explanation, () => {
+        if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }, () => {
+        if (reasoningSec && reasoningTarget && data.reasoning_example) {
+          if (typeof gsap !== 'undefined' && gsap.to) {
+            gsap.to(reasoningSec, { opacity: 1, duration: 0.3 });
+          } else {
+            reasoningSec.style.opacity = '1';
+          }
+          streamWordByWord(reasoningTarget, data.reasoning_example, () => {
+            if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          });
+        }
+      });
 
       // Setup Source Card Passage Panel Toggles
       const togglePassageBtn = dynamicBody.querySelector('#btn-toggle-passage');
@@ -451,12 +581,11 @@
 
       // Setup Follow-Up Chat Interactions
       const chatThread = dynamicBody.querySelector('#instant-help-chat-thread');
-      const followupInput = dynamicBody.querySelector('#instant-help-followup-input');
-      const followupSendBtn = dynamicBody.querySelector('#instant-help-followup-send-btn');
-      const charCountEl = dynamicBody.querySelector('#followup-char-count');
-      const turnBadgeEl = dynamicBody.querySelector('#followup-turn-badge');
+      const followupInput = container.querySelector('#instant-help-followup-input');
+      const followupSendBtn = container.querySelector('#instant-help-followup-send-btn');
+      const charCountEl = container.querySelector('#followup-char-count');
+      const turnBadgeEl = container.querySelector('#followup-turn-badge');
 
-      // Auto-resize textarea on input
       if (followupInput && charCountEl) {
         followupInput.addEventListener('input', () => {
           followupInput.style.height = 'auto';
@@ -493,7 +622,6 @@
         userMsgEl.className = 'instant-help-chat-turn user-turn';
         userMsgEl.innerHTML = `
           <div class="chat-bubble user-bubble">
-            <div class="chat-sender-tag">You</div>
             <p class="chat-text">${escapeHtml(text)}</p>
           </div>
         `;
@@ -505,7 +633,6 @@
         loadingBubble.id = 'chat-turn-loading';
         loadingBubble.innerHTML = `
           <div class="chat-bubble assistant-bubble">
-            <div class="chat-sender-tag">AI Tutor</div>
             <div class="chat-typing-dots">
               <span></span><span></span><span></span>
             </div>
@@ -513,14 +640,13 @@
           </div>
         `;
         chatThread.appendChild(loadingBubble);
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
 
         // Clear input text
         followupInput.value = '';
         followupInput.style.height = 'auto';
         if (charCountEl) charCountEl.textContent = '0 / 1000';
 
-        // Add user question to payload conversation history
         popupSession.conversationHistory.push({
           role: 'user',
           content: text
@@ -572,39 +698,46 @@
             throw new Error(resData.error || ('Server returned HTTP status ' + res.status));
           }
 
-          // Remove loading indicator
           loadingBubble.remove();
-
-          // Increment successful turn count
           popupSession.userTurnsCount++;
 
-          // Append assistant message
+          const turnNum = popupSession.userTurnsCount;
           const assistantMsgEl = document.createElement('div');
           assistantMsgEl.className = 'instant-help-chat-turn assistant-turn';
           assistantMsgEl.innerHTML = `
             <div class="chat-bubble assistant-bubble">
-              <div class="chat-sender-tag">
-                <span>AI Tutor</span>
-                ${isExam ? '<span class="chat-exam-pill">Exam Mode</span>' : ''}
-              </div>
-              <p class="chat-text">${escapeHtml(resData.explanation)}</p>
+              <p class="chat-text" id="followup-stream-exp-${turnNum}"></p>
               ${resData.reasoning_example ? `
-                <div class="chat-example-box">
+                <div class="chat-example-box" id="followup-reasoning-box-${turnNum}" style="opacity: 0;">
                   <span class="example-label">Reasoning &amp; Example:</span>
-                  <p class="example-text">${escapeHtml(resData.reasoning_example)}</p>
+                  <p class="example-text" id="followup-stream-reasoning-${turnNum}"></p>
                 </div>
               ` : ''}
             </div>
           `;
           chatThread.appendChild(assistantMsgEl);
 
-          // Add assistant response to history
+          // Word-by-word streaming generation with blur effect for follow-up reply
+          const chatExpTarget = assistantMsgEl.querySelector(`#followup-stream-exp-${turnNum}`);
+          const chatReasoningBox = assistantMsgEl.querySelector(`#followup-reasoning-box-${turnNum}`);
+          const chatReasoningTarget = assistantMsgEl.querySelector(`#followup-stream-reasoning-${turnNum}`);
+
+          streamWordByWord(chatExpTarget, resData.explanation, () => {
+            if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          }, () => {
+            if (chatReasoningBox && chatReasoningTarget && resData.reasoning_example) {
+              chatReasoningBox.style.opacity = '1';
+              streamWordByWord(chatReasoningTarget, resData.reasoning_example, () => {
+                if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+              });
+            }
+          });
+
           popupSession.conversationHistory.push({
             role: 'assistant',
             content: resData.explanation
           });
 
-          // Update turn count badge
           const remaining = popupSession.maxUserTurns - popupSession.userTurnsCount;
           if (turnBadgeEl) {
             turnBadgeEl.textContent = remaining > 0
@@ -612,7 +745,6 @@
               : 'Limit reached';
           }
 
-          // Check if limit is reached
           if (remaining <= 0) {
             followupInput.disabled = true;
             followupInput.placeholder = 'Follow-up limit reached for this question.';
@@ -635,15 +767,12 @@
             followupInput.focus();
           }
 
-          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
 
         } catch (err) {
           loadingBubble.remove();
-
-          // Roll back user turn in history on network/server error
           popupSession.conversationHistory.pop();
 
-          // Append error notice in chat thread (do NOT erase chat history)
           const errorNotice = document.createElement('div');
           errorNotice.className = 'chat-turn-error';
           errorNotice.innerHTML = `
@@ -656,12 +785,11 @@
           `;
           chatThread.appendChild(errorNotice);
 
-          // Restore text in input so student does not lose their typed message
           followupInput.value = text;
           followupInput.disabled = false;
           if (followupSendBtn) followupSendBtn.disabled = false;
           followupInput.focus();
-          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
         } finally {
           popupSession.isFollowUpInFlight = false;
         }
@@ -769,11 +897,9 @@
       }
     }
 
-    // Start initial request immediately upon modal launch
     executeInitialHelpRequest();
   }
 
-  // Expose function globally for live-test runners and unit testing
   window.openInstantHelpModal = openInstantHelpModal;
   window.openInstantHelpModal.formatSourceCardInfo = formatSourceCardInfo;
 })();

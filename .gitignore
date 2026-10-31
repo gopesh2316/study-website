@@ -4,3 +4,16 @@ node_modules/
 .dev.vars
 js/config.js
 public/js/config.js
+
+# Question bank generation pipeline & local scripts
+data/
+supabase/
+scripts/batch_chapter_pipeline.mjs
+scripts/count_status.mjs
+scripts/generate_insert_sql.mjs
+scripts/generate_questions.mjs
+scripts/patch_*.mjs
+scripts/strict_markdown_verifier.mjs
+scripts/test_anon_query.mjs
+scripts/verify_and_upload.mjs
+scripts/multi_port_proxy.mjs

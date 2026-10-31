@@ -527,58 +527,118 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ==========================================================================
      7. ECONOMICS & QUANTITATIVE PRACTICE WIZARD & TEST CONTROLLER
      ========================================================================== */
+  /**
+ * Real-Time Dynamic Chapter Count Updater
+ * Queries Supabase question_bank for verified active questions and updates .chapter-count elements
+ */
+  async function fetchRealChapterCounts() {
+    const config = window.ECO_CONFIG || {};
+    const url = config.SUPABASE_URL;
+    const anonKey = config.SUPABASE_ANON_KEY;
+
+    if (!url || !anonKey || url.includes("your-project-id")) return;
+
+    try {
+      const res = await fetch(`${url}/rest/v1/question_bank?select=chapter_id&is_active=eq.true&verification_status=eq.verified`, {
+        method: "GET",
+        headers: {
+          "apikey": anonKey,
+          "Authorization": `Bearer ${anonKey}`
+        }
+      });
+
+      if (!res.ok) return;
+
+      const rows = await res.json();
+      const counts = {};
+      for (let i = 1; i <= 10; i++) counts[i] = 0;
+
+      rows.forEach((row) => {
+        const ch = Number(row.chapter_id);
+        if (counts[ch] !== undefined) {
+          counts[ch]++;
+        }
+      });
+
+      // Update DOM for each economics chapter card
+      Object.keys(counts).forEach((chId) => {
+        const card = document.querySelector(`.chapter-card:not(.quant-chapter-card)[data-chapter-id="${chId}"]`);
+        if (card) {
+          const countEl = card.querySelector(".chapter-count");
+          if (countEl) {
+            const c = counts[chId];
+            countEl.textContent = `${c} Question${c === 1 ? "" : "s"}`;
+            countEl.setAttribute("data-real-count", c);
+          }
+        }
+      });
+    } catch (err) {
+      console.warn("EcoMatrix: Falling back to local counts, could not query Supabase question bank:", err);
+    }
+  }
+
+  // Also hook into navigateToView to refresh counts whenever entering test views
+  window.fetchRealChapterCounts = fetchRealChapterCounts;
+
   const practiceWizardCard = document.getElementById("econ-practice-wizard");
   const testSessionContainer = document.getElementById("econ-test-session");
 
   if (practiceWizardCard && testSessionContainer) {
+    // Automatically fetch real chapter counts from Supabase
+    fetchRealChapterCounts();
     // QUESTION BANK BY CHAPTER
     const QUESTION_BANK = {
       1: [
+        { q: "Business Economics is best described as:", opts: ["Pure macroeconomics without practical application", "Integration of economic theory with business practice for decision making", "Descriptive study of primitive economies", "Branch of pure mathematics"], correct: 1, exp: "Business Economics applies microeconomic and macroeconomic concepts to managerial decision making." },
+        { q: "Statements expressing value judgments or 'what ought to be' are classified as:", opts: ["Positive Economics", "Normative Economics", "Empirical Economics", "Quantitative Economics"], correct: 1, exp: "Normative economics deals with ethical evaluations, value judgments, and policy recommendations." }
+      ],
+      2: [
         { q: "If the price elasticity of demand for a good is -2.5, a 10% increase in price will result in:", opts: ["25% increase in quantity demanded", "25% decrease in quantity demanded", "2.5% decrease in quantity demanded", "10% decrease in quantity demanded"], correct: 1, exp: "Price elasticity %ΔQd / %ΔP = -2.5. Therefore %ΔQd = -2.5 × 10% = -25%." },
         { q: "An increase in consumer income for a normal good causes the demand curve to:", opts: ["Shift to the right", "Shift to the left", "Move downward along the curve", "Remain unchanged"], correct: 0, exp: "For normal goods, higher income increases demand at every price level, shifting the demand curve to the right." },
         { q: "Consumer surplus is graphically represented as the area:", opts: ["Below the price line and above supply curve", "Above the price line and below demand curve", "Below the supply curve", "Between demand and supply curves"], correct: 1, exp: "Consumer surplus is the area below the demand curve and above the market equilibrium price line." }
       ],
-      2: [
-        { q: "Which monetary policy tool directly alters the cash percentage banks must maintain with RBI?", opts: ["Statutory Liquidity Ratio (SLR)", "Cash Reserve Ratio (CRR)", "Repo Rate", "Reverse Repo Rate"], correct: 1, exp: "CRR is the mandatory percentage of net demand and time liabilities (NDTL) that commercial banks must maintain as cash with RBI." },
-        { q: "Broad Money (M3) in India includes M1 plus:", opts: ["Post office savings deposits", "Time deposits with commercial banks", "Total post office deposits", "National Savings Certificates"], correct: 1, exp: "M3 = M1 + Time Deposits with commercial banks." }
-      ],
       3: [
-        { q: "According to David Ricardo's theory of Comparative Advantage, international trade is beneficial when countries differ in:", opts: ["Absolute production costs", "Opportunity costs of production", "Wage rates only", "Tariff structures"], correct: 1, exp: "Comparative advantage relies on relative opportunity cost differences between nations." },
-        { q: "A tariff imposed on imported goods will typically:", opts: ["Lower domestic price", "Raise domestic price and protect domestic producers", "Increase import volume", "Eliminate government revenue"], correct: 1, exp: "Tariffs raise import prices, benefiting domestic producers while raising prices for consumers." }
+        { q: "In the short run, the Law of Variable Proportions states that adding more variable factor to fixed factors eventually causes:", opts: ["Marginal product to constantly rise", "Marginal product to diminish", "Fixed costs to increase", "Total output to drop immediately to zero"], correct: 1, exp: "Due to imperfect factor substitutability, marginal product eventually declines." },
+        { q: "An Isoquant curve represents combinations of two inputs that yield:", opts: ["Different levels of utility", "Equal levels of total output", "Equal levels of total cost", "Maximum profit only"], correct: 1, exp: "An isoquant shows all combinations of two factors of production yielding the same physical output." }
       ],
       4: [
-        { q: "Which premier policy think tank replaced the Planning Commission of India in 2015?", opts: ["NITI Aayog", "Finance Commission", "National Development Council", "RBI Monetary Policy Committee"], correct: 0, exp: "NITI Aayog (National Institution for Transforming India) replaced the Planning Commission on January 1, 2015." },
-        { q: "Headline inflation in India is officially measured using which index?", opts: ["Wholesale Price Index (WPI)", "Consumer Price Index (CPI-Combined)", "GDP Deflator", "Industrial Production Index"], correct: 1, exp: "RBI officially adopted CPI-Combined (Base 2012) as the key metric for inflation targeting." }
-      ],
-      5: [
-        { q: "Business Economics is best described as:", opts: ["Pure macroeconomics without practical application", "Integration of economic theory with business practice for decision making", "Descriptive study of primitive economies", "Branch of pure mathematics"], correct: 1, exp: "Business Economics applies microeconomic and macroeconomic concepts to managerial decision making." },
-        { q: "Statements expressing value judgments or 'what ought to be' are classified as:", opts: ["Positive Economics", "Normative Economics", "Empirical Economics", "Quantitative Economics"], correct: 1, exp: "Normative economics deals with ethical evaluations, value judgments, and policy recommendations." }
-      ],
-      6: [
-        { q: "Fiscal Deficit is calculated as:", opts: ["Total Expenditure - Revenue Receipts", "Total Expenditure - (Revenue Receipts + Non-debt Capital Receipts)", "Revenue Expenditure - Revenue Receipts", "Primary Deficit + Interest Payments"], correct: 1, exp: "Fiscal deficit represents government borrowing requirement = Total Expenditure minus Total Non-Debt Receipts." },
-        { q: "A progressive tax structure means that as income rises, the tax rate:", opts: ["Decreases", "Remains constant", "Increases", "Falls to zero"], correct: 2, exp: "Progressive taxation levies a higher percentage tax rate on higher income levels to promote social equity." }
-      ],
-      7: [
         { q: "Under Perfect Competition, an individual firm's demand curve is:", opts: ["Downward sloping", "Horizontal (perfectly elastic)", "Vertical (perfectly inelastic)", "U-shaped"], correct: 1, exp: "Firms in perfect competition are price takers facing a horizontal demand curve where P = AR = MR." },
         { q: "Price Discrimination is possible and profitable only when:", opts: ["Sub-markets have differing price elasticities of demand", "Firms produce identical goods", "Buyers can easily resell products", "Elasticity of demand is identical everywhere"], correct: 0, exp: "Price discrimination requires market power, sub-market separation, and differing demand elasticities." }
       ],
-      8: [
+      5: [
         { q: "The peak of a business cycle represents:", opts: ["Lowest point of output", "Upper turning point where expansion reaches maximum activity", "Phase of declining prices", "Trough of depression"], correct: 1, exp: "The Peak is the highest activity turning point of a business cycle before contraction begins." },
         { q: "Which of the following is considered a LEADING economic indicator?", opts: ["Unemployment rate", "Stock market prices & building permits", "Bank loan defaults", "Consumer Price Index"], correct: 1, exp: "Leading indicators change direction before the overall economy turns." }
       ],
-      9: [
+      6: [
         { q: "In a 2-sector economy, if Marginal Propensity to Consume (MPC) is 0.8, the Investment Multiplier (K) is:", opts: ["2", "4", "5", "10"], correct: 2, exp: "Investment Multiplier K = 1 / (1 - MPC) = 1 / (1 - 0.8) = 5." },
-        { q: "Gross Domestic Product at Market Price (GDP_MP) equals GDP at Factor Cost (GDP_FC) plus:", opts: ["Net Factor Income from Abroad", "Depreciation", "Net Indirect Taxes (Indirect Taxes - Subsidies)", "Transfer Payments"], correct: 2, exp: "GDP_MP = GDP_FC + Net Indirect Taxes." }
+        { q: "GDP at Factor Cost equals GDP at Market Price minus:", opts: ["Depreciation", "Net Indirect Taxes (Indirect Taxes - Subsidies)", "Net Factor Income from Abroad", "Transfer Payments"], correct: 1, exp: "Market prices include Net Indirect Taxes. Subtracting NIT gives GDP at Factor Cost." }
+      ],
+      7: [
+        { q: "Fiscal Deficit is calculated as:", opts: ["Total Expenditure - Revenue Receipts", "Total Expenditure - (Revenue Receipts + Non-debt Capital Receipts)", "Revenue Expenditure - Revenue Receipts", "Primary Deficit + Interest Payments"], correct: 1, exp: "Fiscal deficit represents government borrowing requirement = Total Expenditure minus Total Non-Debt Receipts." },
+        { q: "A progressive tax structure means that as income rises, the tax rate:", opts: ["Decreases", "Remains constant", "Increases", "Falls to zero"], correct: 2, exp: "Progressive taxation levies a higher percentage tax rate on higher income levels to promote social equity." }
+      ],
+      8: [
+        { q: "Which monetary policy tool directly alters the cash percentage banks must maintain with RBI?", opts: ["Statutory Liquidity Ratio (SLR)", "Cash Reserve Ratio (CRR)", "Repo Rate", "Reverse Repo Rate"], correct: 1, exp: "CRR is the mandatory percentage of net demand and time liabilities (NDTL) that commercial banks must maintain as cash with RBI." },
+        { q: "Broad Money (M3) in India includes M1 plus:", opts: ["Post office savings deposits", "Time deposits with commercial banks", "Total post office deposits", "National Savings Certificates"], correct: 1, exp: "M3 = M1 + Time Deposits with commercial banks." }
+      ],
+      9: [
+        { q: "According to David Ricardo's theory of Comparative Advantage, international trade is beneficial when countries differ in:", opts: ["Absolute production costs", "Opportunity costs of production", "Wage rates only", "Tariff structures"], correct: 1, exp: "Comparative advantage relies on relative opportunity cost differences between nations." },
+        { q: "A tariff imposed on imported goods will typically:", opts: ["Lower domestic price", "Raise domestic price and protect domestic producers", "Increase import volume", "Eliminate government revenue"], correct: 1, exp: "Tariffs raise import prices, benefiting domestic producers while raising prices for consumers." }
       ],
       10: [
-        { q: "In Stage II of production (Law of Variable Proportions), what happens to Marginal Product (MP) and Average Product (AP)?", opts: ["MP and AP both rise", "MP and AP both fall, with MP > 0", "MP is negative while AP is rising", "AP is at its maximum"], correct: 1, exp: "In Stage II, TP continues rising at a diminishing rate. Both MP and AP decline, MP is positive (MP > 0)." },
-        { q: "The short-run Average Total Cost (ATC) curve is U-shaped due to:", opts: ["Law of Variable Proportions", "Economies of Scale", "Constant Returns to Scale", "Decreasing Marginal Utility"], correct: 0, exp: "In the short run with fixed inputs, cost curves are U-shaped because of the Law of Variable Proportions." }
+        { q: "Which premier policy think tank replaced the Planning Commission of India in 2015?", opts: ["NITI Aayog", "Finance Commission", "National Development Council", "RBI Monetary Policy Committee"], correct: 0, exp: "NITI Aayog (National Institution for Transforming India) replaced the Planning Commission on January 1, 2015." },
+        { q: "Headline inflation in India is officially measured using which index?", opts: ["Wholesale Price Index (WPI)", "Consumer Price Index (CPI-Combined)", "GDP Deflator", "Industrial Production Index"], correct: 1, exp: "RBI officially adopted CPI-Combined (Base 2012) as the key metric for inflation targeting." }
       ]
     };
 
     // State Variables
     let currentStep = 1; // 1 to 6
     let selectedChapters = new Set();
+    let isCalmMode = false;
+    try {
+      isCalmMode = localStorage.getItem("study_portal_calm_mode") === "true";
+    } catch (e) {}
+
     let preferenceState = {
       difficulty: "mix",
       qcount: 10,
@@ -588,16 +648,16 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const CHAPTER_NAMES = {
-      1: "Theory of Demand and Supply",
-      2: "Money Market",
-      3: "International Trade",
-      4: "Indian Economy",
-      5: "Nature and Scope of Business Economics",
-      6: "Public Finance",
-      7: "Price Determination in Different Markets",
-      8: "Business Cycles",
-      9: "Determination of National Income",
-      10: "Theory of Production and Cost"
+      1: "Nature and Scope of Business Economics",
+      2: "Theory of Demand and Supply",
+      3: "Theory of Production and Cost",
+      4: "Price Determination in Different Markets",
+      5: "Business Cycles",
+      6: "Determination of National Income",
+      7: "Public Finance",
+      8: "Money Market",
+      9: "International Trade",
+      10: "Indian Economy"
     };
 
     const STEP_TITLES = {
@@ -845,10 +905,14 @@ document.addEventListener("DOMContentLoaded", () => {
           if (val === "custom" && stateKey === "qcount") {
             const wrap = document.getElementById("custom-qcount-wrap");
             if (wrap) wrap.classList.remove("hidden");
+            const customInput = document.getElementById("custom-qcount-input");
+            const parsed = parseInt(customInput?.value, 10);
+            preferenceState.qcount = (!isNaN(parsed) && parsed >= 1 && parsed <= 100) ? parsed : 25;
+            if (customInput && !customInput.value) customInput.value = preferenceState.qcount;
           } else if (stateKey === "qcount") {
             const wrap = document.getElementById("custom-qcount-wrap");
             if (wrap) wrap.classList.add("hidden");
-            preferenceState.qcount = parseInt(val) || 10;
+            preferenceState.qcount = Math.min(100, Math.max(1, parseInt(val, 10) || 10));
           } else {
             preferenceState[stateKey] = val;
           }
@@ -969,6 +1033,92 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // Fetch questions from Supabase or local fallback
+    async function fetchEconomicsTestQuestions() {
+      const chList = Array.from(selectedChapters);
+      const requestedDifficulty = (preferenceState.difficulty || "mix").toLowerCase();
+      const requestedCount = Math.min(100, Math.max(1, parseInt(preferenceState.qcount, 10) || 10));
+
+      const config = window.ECO_CONFIG || {};
+      const url = config.SUPABASE_URL;
+      const anonKey = config.SUPABASE_ANON_KEY;
+
+      if (url && anonKey && !url.includes("your-project-id") && chList.length > 0) {
+        try {
+          let queryUrl = `${url}/rest/v1/question_bank?select=id,chapter_id,chapter_title,topic,question_text,option_a,option_b,option_c,option_d,correct_option,explanation,difficulty&chapter_id=in.(${chList.join(",")})&is_active=eq.true&verification_status=eq.verified`;
+
+          if (requestedDifficulty !== "mix") {
+            queryUrl += `&difficulty=eq.${encodeURIComponent(requestedDifficulty)}`;
+          }
+          queryUrl += `&limit=500`;
+
+          const res = await fetch(queryUrl, {
+            method: "GET",
+            headers: {
+              "apikey": anonKey,
+              "Authorization": `Bearer ${anonKey}`
+            }
+          });
+
+          if (res.ok) {
+            const rows = await res.json();
+            if (Array.isArray(rows) && rows.length > 0) {
+              let pool = rows.map((r) => {
+                const optLetter = (r.correct_option || "A").trim().toUpperCase();
+                const correctIdx = optLetter.charCodeAt(0) - 65;
+                return {
+                  id: r.id,
+                  chId: r.chapter_id,
+                  chName: r.chapter_title || getChapterName(r.chapter_id, false),
+                  topic: r.topic || "",
+                  q: r.question_text,
+                  opts: [r.option_a, r.option_b, r.option_c, r.option_d],
+                  correct: (correctIdx >= 0 && correctIdx <= 3) ? correctIdx : 0,
+                  exp: r.explanation || "",
+                  difficulty: (r.difficulty || "medium").toLowerCase()
+                };
+              });
+
+              if (requestedDifficulty !== "mix") {
+                pool = pool.filter((q) => q.difficulty === requestedDifficulty);
+              }
+
+              if (pool.length > 0) {
+                pool.sort(() => Math.random() - 0.5);
+                return pool.slice(0, Math.min(requestedCount, pool.length));
+              }
+            }
+          }
+        } catch (fetchErr) {
+          console.warn("Could not fetch questions from Supabase, using local pool:", fetchErr);
+        }
+      }
+
+      // Fallback
+      let localPool = [];
+      chList.forEach((chId) => {
+        if (QUESTION_BANK[chId]) {
+          const chName = getChapterName(chId, false);
+          QUESTION_BANK[chId].forEach((q) => {
+            localPool.push({
+              ...q,
+              chId: chId,
+              chName: chName,
+              difficulty: q.difficulty || (requestedDifficulty !== "mix" ? requestedDifficulty : "medium")
+            });
+          });
+        }
+      });
+
+      if (requestedDifficulty !== "mix") {
+        const strictDiff = localPool.filter((q) => (q.difficulty || "").toLowerCase() === requestedDifficulty);
+        if (strictDiff.length > 0) localPool = strictDiff;
+      }
+
+      localPool.sort(() => Math.random() - 0.5);
+      return localPool.slice(0, Math.min(requestedCount, localPool.length));
+    }
+
     // FULL WHITE BLUR START TEST COUNTDOWN OVERLAY
     function runStartTestCountdown(onComplete) {
       const overlay = document.getElementById("test-start-countdown-overlay");
@@ -977,7 +1127,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const appLayout = document.querySelector(".app-layout");
 
       if (!overlay || !numEl) {
-        if (typeof onComplete === "function") onComplete();
+        if (typeof onComplete === "function") {
+          Promise.resolve(onComplete());
+        }
         return;
       }
 
@@ -1010,9 +1162,20 @@ document.addEventListener("DOMContentLoaded", () => {
               showNextNumber();
             }, 780);
           } else {
-            if (typeof onComplete === "function") onComplete();
-            overlay.classList.remove("active");
-            if (appLayout) appLayout.classList.remove("screen-blurred");
+            // FINISHED 3, 2, 1 COUNTDOWN:
+            // Mount the test tab and question 1 FIRST while the white overlay is still concealing Step 6!
+            const finishCountdown = async () => {
+              try {
+                if (typeof onComplete === "function") {
+                  await onComplete();
+                }
+              } finally {
+                // Now that the test view is completely rendered, remove overlay cleanly
+                overlay.classList.remove("active");
+                if (appLayout) appLayout.classList.remove("screen-blurred");
+              }
+            };
+            finishCountdown();
           }
         }
 
@@ -1020,16 +1183,24 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 400);
     }
 
-    // Wizard Navigation Buttons
+    function triggerEconTestStart() {
+      // 1. Immediately start loading questions during the 3, 2, 1 timer
+      const questionsPromise = fetchEconomicsTestQuestions();
+
+      // 2. Run the countdown, and by the time 1 finishes, questions are already in memory
+      runStartTestCountdown(async () => {
+        const loadedQuestions = await questionsPromise;
+        startPracticeTestSession(loadedQuestions);
+      });
+    }
+
     btnNext.addEventListener("click", () => {
       if (currentStep < 6) {
         if (currentStep === 1 && selectedChapters.size === 0) return;
         currentStep++;
         updateWizardUI(true);
       } else if (currentStep === 6) {
-        runStartTestCountdown(() => {
-          startPracticeTestSession();
-        });
+        triggerEconTestStart();
       }
     });
 
@@ -1042,9 +1213,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (btnStartCta) {
       btnStartCta.addEventListener("click", () => {
-        runStartTestCountdown(() => {
-          startPracticeTestSession();
-        });
+        triggerEconTestStart();
       });
     }
 
@@ -1066,35 +1235,44 @@ document.addEventListener("DOMContentLoaded", () => {
       return card ? card.textContent.trim() : (isQuant ? "Quantitative Aptitude" : "Business Economics");
     }
 
-    function startPracticeTestSession() {
-      // Gather questions from selected chapters
-      activeTestQuestions = [];
-      const chList = Array.from(selectedChapters);
+    function startPracticeTestSession(preloadedQuestions = null) {
+      if (Array.isArray(preloadedQuestions) && preloadedQuestions.length > 0) {
+        activeTestQuestions = preloadedQuestions;
+      } else {
+        // Fallback if called directly without prefetch
+        activeTestQuestions = [];
+        const chList = Array.from(selectedChapters);
+        const requestedDifficulty = (preferenceState.difficulty || "mix").toLowerCase();
+        const requestedCount = Math.min(100, Math.max(1, parseInt(preferenceState.qcount, 10) || 10));
 
-      chList.forEach((chId) => {
-        if (QUESTION_BANK[chId]) {
-          const chName = getChapterName(chId, false);
-          QUESTION_BANK[chId].forEach((q) => {
-            activeTestQuestions.push({
-              ...q,
-              chId: chId,
-              chName: chName
+        let localPool = [];
+        chList.forEach((chId) => {
+          if (QUESTION_BANK[chId]) {
+            const chName = getChapterName(chId, false);
+            QUESTION_BANK[chId].forEach((q) => {
+              localPool.push({
+                ...q,
+                chId: chId,
+                chName: chName,
+                difficulty: q.difficulty || (requestedDifficulty !== "mix" ? requestedDifficulty : "medium")
+              });
             });
-          });
+          }
+        });
+        if (requestedDifficulty !== "mix") {
+          const strict = localPool.filter((q) => (q.difficulty || "").toLowerCase() === requestedDifficulty);
+          if (strict.length > 0) localPool = strict;
         }
-      });
-
-      // Shuffle and slice to desired question count
-      activeTestQuestions.sort(() => Math.random() - 0.5);
-      const targetCount = Math.min(preferenceState.qcount, activeTestQuestions.length);
-      activeTestQuestions = activeTestQuestions.slice(0, Math.max(targetCount, 2));
+        localPool.sort(() => Math.random() - 0.5);
+        activeTestQuestions = localPool.slice(0, Math.min(requestedCount, localPool.length));
+      }
 
       currentQIndex = 0;
       userAnswers = {};
       visitedQuestions = new Set();
       visitedQuestions.add(0);
 
-      // Hide wizard and focus header, show session
+      // Hide wizard and focus header, mount session
       practiceWizardCard.classList.add("hidden");
       testSessionContainer.classList.remove("hidden");
       document.querySelector(".main-content-area")?.classList.add("in-test-session");
@@ -1106,12 +1284,21 @@ document.addEventListener("DOMContentLoaded", () => {
       startExamTimer();
 
       renderCurrentQuestion();
+      const col = testSessionContainer.querySelector(".live-test-main-col");
+      if (col) col.scrollTop = 0;
     }
 
     function formatTime(totalSecs) {
-      const mins = Math.floor(Math.max(0, totalSecs) / 60);
-      const secs = Math.max(0, totalSecs) % 60;
-      return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+      const s = Math.max(0, totalSecs);
+      const hours = Math.floor(s / 3600);
+      const mins = Math.floor((s % 3600) / 60);
+      const secs = s % 60;
+      const pad = (n) => (n < 10 ? "0" + n : String(n));
+
+      if (hours > 0) {
+        return `${hours}:${pad(mins)}:${pad(secs)}`;
+      }
+      return `${mins}:${pad(secs)}`;
     }
 
     function startExamTimer() {
@@ -1131,27 +1318,40 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 1000);
     }
 
-    function renderDigitGroupHtml(numVal, shouldAnimate = true) {
+    function renderDigitGroupHtml(numVal, shouldAnimate = false) {
       const numStr = String(numVal);
       const digits = numStr.split("");
       const animClass = shouldAnimate ? " is-animating" : "";
       return `<span class="t-digit-group${animClass}">${digits.map((d, i) => `<span class="t-digit" data-stagger="${i + 1}">${d}</span>`).join("")}</span>`;
     }
 
-    function renderTimeDigitGroupHtml(currTimeStr, prevTimeStr = null, shouldAnimate = true) {
+    function renderTimeDigitGroupHtml(currTimeStr, prevTimeStr = null, shouldAnimate = false) {
       const currChars = String(currTimeStr).split("");
-      const prevChars = prevTimeStr ? String(prevTimeStr).split("") : [];
+      const prevChars = (prevTimeStr && typeof prevTimeStr === "string") ? String(prevTimeStr).split("") : [];
 
       return `<span class="t-digit-group">${currChars
         .map((c, i) => {
           if (c === ":") return `<span class="t-colon">:</span>`;
 
-          const changed = !prevTimeStr || i >= prevChars.length || c !== prevChars[i];
+          // Only animate if shouldAnimate is strictly true, prevTimeStr exists, and this character specifically changed
+          const changed = Boolean(prevChars.length > 0 && (i >= prevChars.length || c !== prevChars[i]));
           const animClass = (shouldAnimate && changed) ? " is-animating" : "";
 
           return `<span class="t-digit${animClass}" data-stagger="${i + 1}">${c}</span>`;
         })
         .join("")}</span>`;
+    }
+
+
+    function getDifficultyShapeHtml(diff) {
+      const d = (diff || "medium").toLowerCase();
+      if (d === "easy") {
+        return `<span class="live-q-diff-shape" title="Difficulty: Easy" aria-label="Easy difficulty"><svg width="13" height="13" viewBox="0 0 24 24" fill="#16a34a" xmlns="http://www.w3.org/2000/svg"><polygon points="12,2 22,21 2,21"/></svg></span>`;
+      } else if (d === "hard") {
+        return `<span class="live-q-diff-shape" title="Difficulty: Hard" aria-label="Hard difficulty"><svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/></svg></span>`;
+      } else {
+        return `<span class="live-q-diff-shape" title="Difficulty: Medium" aria-label="Medium difficulty"><svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span>`;
+      }
     }
 
     let shouldAnimateEconSwitch = true;
@@ -1180,10 +1380,29 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const isDarkTheme = preferenceState.theme === "dark";
-      const wrapperClass = "live-test-wrapper" + (isDarkTheme ? " live-test-theme-dark" : "");
+      const wrapperClass = "live-test-wrapper" + (isDarkTheme ? " live-test-theme-dark" : "") + (isCalmMode ? " calm-mode-active" : "");
 
       let html = `
         <div class="${wrapperClass}">
+          <!-- Full Red Leave Confirmation Overlay -->
+          <div class="live-test-leave-overlay" id="test-leave-overlay" aria-hidden="true">
+            <div class="leave-confirm-card">
+              <div class="leave-confirm-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <h3 class="leave-confirm-title">Leave Test Session?</h3>
+              <p class="leave-confirm-desc">Are you sure you want to leave this session? Your test progress will not be saved.</p>
+              <div class="leave-confirm-actions">
+                <button class="btn-leave-cancel" id="btn-leave-cancel" type="button">Don't</button>
+                <button class="btn-leave-confirm" id="btn-leave-confirm" type="button">Continue</button>
+              </div>
+            </div>
+          </div>
+
           <div class="live-test-body">
             <!-- LEFT COLUMN (25%) -->
             <div class="live-test-left-col">
@@ -1194,12 +1413,16 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="live-test-left-footer">
                 <div class="live-test-timer-badge">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.24 16.24L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span id="test-timer-val">${renderTimeDigitGroupHtml(formatTime(secondsRemaining), false)}</span>
+                  <span id="test-timer-val">${renderTimeDigitGroupHtml(formatTime(secondsRemaining), null, false)}</span>
                 </div>
+                <button class="btn-toggle-calm ${isCalmMode ? "active" : ""}" id="test-calm-toggle-btn" title="Toggle Calm Mode">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.7 7.7A2.5 2.5 0 1 1 19.5 12H2M9.6 4.6A2 2 0 1 1 11 8H2M12.6 19.4A2 2 0 1 0 14 16H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Calm</span>
+                </button>
                 <button class="btn-toggle-live-theme" id="test-theme-toggle-btn" title="Toggle Light/Dark Theme">
                   ${isDarkTheme
-                    ? `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
-                    : `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+          ? `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
+          : `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
                   <span>${isDarkTheme ? "Light" : "Dark"}</span>
                 </button>
                 <button class="btn-leave-test" id="test-exit-btn"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.8105 2C22.3973 8.57225 22.3973 15.4277 20.8105 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 11.95H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.20081 16.8999L2.59082 13.3899C2.40292 13.2115 2.25331 12.9966 2.15106 12.7585C2.04881 12.5204 1.99609 12.264 1.99609 12.0049C1.99609 11.7458 2.04881 11.4893 2.15106 11.2512C2.25331 11.0131 2.40292 10.7983 2.59082 10.6199L6.20081 7.09985" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Leave</button>
@@ -1208,46 +1431,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <!-- MIDDLE COLUMN (50%) -->
             <div class="live-test-main-col">
-              <div class="live-q-text ${doAnim ? "q-animating" : ""}">${qData.q}</div>
-
-              <div class="live-options-list ${doAnim ? "is-animating" : ""}">
-                ${qData.opts.map((opt, idx) => {
-                  const selectedIdx = userAnswers[currentQIndex];
-                  const isSelected = selectedIdx === idx;
-                  let optionClass = "live-option-card" + (isSelected ? " selected" : "");
-                  if (selectedIdx !== undefined && !isExam) {
-                    if (idx === qData.correct) optionClass += " option-correct";
-                    else if (isSelected) optionClass += " option-wrong";
-                  }
-
-                  return `
-                    <div class="${optionClass}" data-opt-idx="${idx}">
-                      <div class="live-option-num">${String.fromCharCode(65 + idx)}</div>
-                      <div class="live-option-text">${opt}</div>
-                      <div class="live-option-radio">
-                        <span class="radio-outer"><span class="radio-inner"></span></span>
-                      </div>
-                    </div>
-                  `;
-                }).join("")}
-              </div>
-
-              ${!isExam && userAnswers[currentQIndex] !== undefined ? `
-                <div class="live-feedback-box ${userAnswers[currentQIndex] === qData.correct ? "correct" : "wrong"}">
-                  <strong>${userAnswers[currentQIndex] === qData.correct ? "✓ Correct Answer!" : "✗ Incorrect"}</strong>
-                  <p style="margin-top: 4px;">${qData.exp}</p>
+              <div class="live-q-normal-content" id="live-q-normal-content">
+                <div class="live-q-meta-header">
+                  <span class="live-q-tag-ch" style="font-size: 0.74rem; font-weight: 600; padding: 4px 10px; border-radius: 60px; background: rgba(59, 130, 246, 0.12); color: #3b82f6;">${qData.chName || 'Economics'}</span>
+                  ${getDifficultyShapeHtml(qData.difficulty)}
                 </div>
-              ` : ""}
+                <div class="live-q-text ${doAnim ? "q-animating" : ""}">${qData.q}</div>
 
-              <div class="live-test-footer">
-                <button class="btn-instant-help" id="test-btn-instant-help" type="button" title="Get Instant Help">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/>
-                  </svg>
-                  <span>Get Instant Help</span>
-                </button>
-                <button class="btn-wizard btn-prev btn-live-prev" id="test-btn-prev" ${currentQIndex === 0 ? "disabled" : ""}>Previous</button>
-                <button class="btn-wizard btn-next btn-live-next" id="test-btn-next">${currentQIndex === totalQ - 1 ? "Submit & View Results" : "Save & Next"}</button>
+                <div class="live-options-list ${doAnim ? "is-animating" : ""}">
+                  ${qData.opts.map((opt, idx) => {
+              const selectedIdx = userAnswers[currentQIndex];
+              const isSelected = selectedIdx === idx;
+              let optionClass = "live-option-card" + (isSelected ? " selected" : "");
+              if (selectedIdx !== undefined && !isExam) {
+                if (idx === qData.correct) optionClass += " option-correct";
+                else if (isSelected) optionClass += " option-wrong";
+              }
+
+              return `
+                      <div class="${optionClass}" data-opt-idx="${idx}">
+                        <div class="live-option-num">${String.fromCharCode(65 + idx)}</div>
+                        <div class="live-option-text">${opt}</div>
+                        <div class="live-option-radio">
+                          <span class="radio-outer"><span class="radio-inner"></span></span>
+                        </div>
+                      </div>
+                    `;
+            }).join("")}
+                </div>
+
+                ${!isExam && userAnswers[currentQIndex] !== undefined ? `
+                  <div class="live-feedback-box ${userAnswers[currentQIndex] === qData.correct ? "correct" : "wrong"}">
+                    <strong>${userAnswers[currentQIndex] === qData.correct ? "✓ Correct Answer!" : "✗ Incorrect"}</strong>
+                    <p style="margin-top: 4px;">${qData.exp}</p>
+                  </div>
+                ` : ""}
+
+                ${(() => {
+            const isAnswered = userAnswers[currentQIndex] !== undefined;
+            const isMuted = !isExam && !isAnswered;
+            return `
+                    <div class="live-test-footer">
+                      <div class="instant-help-wrapper${isMuted ? " is-muted" : ""}" id="instant-help-wrapper">
+                        <button class="btn-instant-help${isMuted ? " muted" : ""}" id="test-btn-instant-help" type="button" ${isMuted ? 'disabled aria-disabled="true"' : 'title="Get Instant Help"'}>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/>
+                          </svg>
+                          <span>Get Instant Help</span>
+                        </button>
+                        <div class="instant-help-tooltip" id="instant-help-tooltip" role="tooltip">Answer this question honestly to enable this button</div>
+                      </div>
+                  `;
+          })()}
+                  <button class="btn-wizard btn-prev btn-live-prev" id="test-btn-prev" ${currentQIndex === 0 ? "disabled" : ""}>Previous</button>
+                  <button class="btn-wizard btn-next btn-live-next" id="test-btn-next">${currentQIndex === totalQ - 1 ? "Submit & View Results" : "Save & Next"}</button>
+                </div>
               </div>
             </div>
 
@@ -1271,19 +1509,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
               <div class="palette-grid-container">
                 ${Array.from({ length: totalQ }, (_, i) => {
-                  let btnClass = "palette-grid-btn";
-                  if (i === currentQIndex) btnClass += " active-current";
-                  if (userAnswers[i] !== undefined) btnClass += " status-answered";
-                  else if (visitedQuestions.has(i)) btnClass += " status-skipped";
-                  else btnClass += " status-not-visited";
+          let btnClass = "palette-grid-btn";
+          if (i === currentQIndex) btnClass += " active-current";
+          if (userAnswers[i] !== undefined) btnClass += " status-answered";
+          else if (visitedQuestions.has(i)) btnClass += " status-skipped";
+          else btnClass += " status-not-visited";
 
-                  return `
+          return `
                     <button class="${btnClass}" data-q-idx="${i}">
                       <span class="palette-btn-num">${i + 1}</span>
                       <span class="palette-btn-dot"></span>
                     </button>
                   `;
-                }).join("")}
+        }).join("")}
               </div>
             </div>
           </div>
@@ -1301,6 +1539,21 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Event Listeners for Session Controls
+      const calmToggleBtn = document.getElementById("test-calm-toggle-btn");
+      if (calmToggleBtn) {
+        calmToggleBtn.addEventListener("click", () => {
+          isCalmMode = !isCalmMode;
+          try {
+            localStorage.setItem("study_portal_calm_mode", isCalmMode ? "true" : "false");
+          } catch (e) {}
+          const wrapper = testSessionContainer.querySelector(".live-test-wrapper");
+          if (wrapper) {
+            wrapper.classList.toggle("calm-mode-active", isCalmMode);
+          }
+          calmToggleBtn.classList.toggle("active", isCalmMode);
+        });
+      }
+
       const themeToggleBtn = document.getElementById("test-theme-toggle-btn");
       if (themeToggleBtn) {
         themeToggleBtn.addEventListener("click", () => {
@@ -1310,8 +1563,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const exitBtn = document.getElementById("test-exit-btn");
+      const leaveOverlay = document.getElementById("test-leave-overlay");
+      const leaveCancelBtn = document.getElementById("btn-leave-cancel");
+      const leaveConfirmBtn = document.getElementById("btn-leave-confirm");
+
       if (exitBtn) {
-        exitBtn.addEventListener("click", exitTestSession);
+        exitBtn.addEventListener("click", () => {
+          if (leaveOverlay) {
+            leaveOverlay.classList.add("active");
+            leaveOverlay.setAttribute("aria-hidden", "false");
+          } else {
+            exitTestSession();
+          }
+        });
         exitBtn.addEventListener("mouseenter", () => {
           document.querySelector(".live-test-body")?.classList.add("leave-hover-active");
           document.querySelector(".main-content-area")?.classList.add("leave-hover-active");
@@ -1322,12 +1586,74 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
+      if (leaveCancelBtn) {
+        leaveCancelBtn.addEventListener("click", () => {
+          if (leaveOverlay) {
+            leaveOverlay.classList.remove("active");
+            leaveOverlay.setAttribute("aria-hidden", "true");
+          }
+        });
+      }
+
+      if (leaveConfirmBtn) {
+        leaveConfirmBtn.addEventListener("click", () => {
+          if (leaveOverlay) {
+            leaveOverlay.classList.remove("active");
+            leaveOverlay.setAttribute("aria-hidden", "true");
+          }
+          exitTestSession();
+        });
+      }
+
+      function updateEconPaletteCounts() {
+        let ans = 0, skp = 0, nvis = 0;
+        for (let i = 0; i < totalQ; i++) {
+          if (userAnswers[i] !== undefined) ans++;
+          else if (visitedQuestions.has(i)) skp++;
+          else nvis++;
+        }
+        const ansEl = testSessionContainer.querySelector(".palette-status-pill.answered .status-num");
+        const skpEl = testSessionContainer.querySelector(".palette-status-pill.skipped .status-num");
+        const nvisEl = testSessionContainer.querySelector(".palette-status-pill.not-visited .status-num");
+        if (ansEl) ansEl.textContent = ans;
+        if (skpEl) skpEl.textContent = skp;
+        if (nvisEl) nvisEl.textContent = nvis;
+      }
+
       const optBtns = testSessionContainer.querySelectorAll(".live-option-card");
       optBtns.forEach((card) => {
         card.addEventListener("click", () => {
           if (!isExam && userAnswers[currentQIndex] !== undefined) return;
           const optIdx = parseInt(card.getAttribute("data-opt-idx"));
           userAnswers[currentQIndex] = optIdx;
+
+          // In Exam Mode: update selected option and palette without touching the timer
+          if (isExam) {
+            optBtns.forEach((c) => {
+              const cIdx = parseInt(c.getAttribute("data-opt-idx"));
+              c.classList.toggle("selected", cIdx === optIdx);
+            });
+            const palBtn = testSessionContainer.querySelector(`.palette-grid-btn[data-q-idx="${currentQIndex}"]`);
+            if (palBtn) {
+              palBtn.classList.remove("status-skipped", "status-not-visited");
+              palBtn.classList.add("status-answered");
+            }
+            updateEconPaletteCounts();
+            return;
+          }
+
+          // In Practice Mode: un-mute instant help immediately
+          const hw = testSessionContainer.querySelector("#instant-help-wrapper");
+          const hb = testSessionContainer.querySelector("#test-btn-instant-help");
+          if (hw) hw.classList.remove("is-muted", "show-tooltip");
+          if (hb) {
+            hb.classList.remove("muted");
+            hb.removeAttribute("disabled");
+            hb.removeAttribute("aria-disabled");
+            hb.title = "Get Instant Help";
+          }
+
+          // In Practice Mode: reveal explanation and feedback
           shouldAnimateEconSwitch = false;
           renderCurrentQuestion();
         });
@@ -1372,9 +1698,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
+      const helpWrapper = document.getElementById("instant-help-wrapper");
+      if (helpWrapper) {
+        helpWrapper.addEventListener("click", (e) => {
+          if (helpWrapper.classList.contains("is-muted")) {
+            e.preventDefault();
+            e.stopPropagation();
+            helpWrapper.classList.add("show-tooltip");
+            clearTimeout(helpWrapper._tooltipTimeout);
+            helpWrapper._tooltipTimeout = setTimeout(() => {
+              helpWrapper.classList.remove("show-tooltip");
+            }, 2500);
+          }
+        });
+      }
+
       const helpBtn = document.getElementById("test-btn-instant-help");
       if (helpBtn) {
         helpBtn.addEventListener("click", () => {
+          if (helpBtn.classList.contains("muted") || helpBtn.disabled) return;
           if (typeof window.openInstantHelpModal === "function") {
             window.openInstantHelpModal({
               question: qData.q,
@@ -1780,10 +2122,14 @@ document.addEventListener("DOMContentLoaded", () => {
           if (val === "custom" && stateKey === "qcount") {
             const wrap = document.getElementById("quant-custom-qcount-wrap");
             if (wrap) wrap.classList.remove("hidden");
+            const customInput = document.getElementById("quant-custom-qcount-input");
+            const parsed = parseInt(customInput?.value, 10);
+            quantPrefState.qcount = (!isNaN(parsed) && parsed >= 1 && parsed <= 100) ? parsed : 25;
+            if (customInput && !customInput.value) customInput.value = quantPrefState.qcount;
           } else if (stateKey === "qcount") {
             const wrap = document.getElementById("quant-custom-qcount-wrap");
             if (wrap) wrap.classList.add("hidden");
-            quantPrefState.qcount = parseInt(val) || 10;
+            quantPrefState.qcount = Math.min(100, Math.max(1, parseInt(val, 10) || 10));
           } else {
             quantPrefState[stateKey] = val;
           }
@@ -1806,15 +2152,19 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    function triggerQuantTestStart() {
+      runStartTestCountdown(() => {
+        startQuantPracticeTestSession();
+      });
+    }
+
     quantBtnNext.addEventListener("click", () => {
       if (quantCurrentStep < 6) {
         if (quantCurrentStep === 1 && quantSelectedChapters.size === 0) return;
         quantCurrentStep++;
         updateQuantWizardUI(true);
       } else if (quantCurrentStep === 6) {
-        runStartTestCountdown(() => {
-          startQuantPracticeTestSession();
-        });
+        triggerQuantTestStart();
       }
     });
 
@@ -1827,9 +2177,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (quantBtnStartCta) {
       quantBtnStartCta.addEventListener("click", () => {
-        runStartTestCountdown(() => {
-          startQuantPracticeTestSession();
-        });
+        triggerQuantTestStart();
       });
     }
 
@@ -1849,23 +2197,31 @@ document.addEventListener("DOMContentLoaded", () => {
     function startQuantPracticeTestSession() {
       activeQuantQuestions = [];
       const chList = Array.from(quantSelectedChapters);
+      const requestedDifficulty = (quantPrefState.difficulty || "mix").toLowerCase();
+      const requestedCount = Math.min(100, Math.max(1, parseInt(quantPrefState.qcount, 10) || 10));
 
+      let pool = [];
       chList.forEach((chId) => {
         if (QUANT_QUESTION_BANK[chId]) {
           const chName = getChapterName(chId, true);
           QUANT_QUESTION_BANK[chId].forEach((q) => {
-            activeQuantQuestions.push({
+            pool.push({
               ...q,
               chId: chId,
-              chName: chName
+              chName: chName,
+              difficulty: q.difficulty || (requestedDifficulty !== "mix" ? requestedDifficulty : "medium")
             });
           });
         }
       });
 
-      activeQuantQuestions.sort(() => Math.random() - 0.5);
-      const targetCount = Math.min(quantPrefState.qcount, activeQuantQuestions.length);
-      activeQuantQuestions = activeQuantQuestions.slice(0, Math.max(targetCount, 2));
+      if (requestedDifficulty !== "mix") {
+        const strict = pool.filter((q) => (q.difficulty || "").toLowerCase() === requestedDifficulty);
+        if (strict.length > 0) pool = strict;
+      }
+
+      pool.sort(() => Math.random() - 0.5);
+      activeQuantQuestions = pool.slice(0, Math.min(requestedCount, pool.length));
 
       quantCurrentQIndex = 0;
       quantUserAnswers = {};
@@ -1928,7 +2284,26 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       let html = `
-        <div class="live-test-wrapper">
+        <div class="live-test-wrapper ${quantPrefState.theme === "dark" ? "live-test-theme-dark" : ""} ${isCalmMode ? "calm-mode-active" : ""}">
+          <!-- Full Red Leave Confirmation Overlay -->
+          <div class="live-test-leave-overlay" id="quant-test-leave-overlay" aria-hidden="true">
+            <div class="leave-confirm-card">
+              <div class="leave-confirm-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <h3 class="leave-confirm-title">Leave Test Session?</h3>
+              <p class="leave-confirm-desc">Are you sure you want to leave this session? Your test progress will not be saved.</p>
+              <div class="leave-confirm-actions">
+                <button class="btn-leave-cancel" id="quant-btn-leave-cancel" type="button">Don't</button>
+                <button class="btn-leave-confirm" id="quant-btn-leave-confirm" type="button">Continue</button>
+              </div>
+            </div>
+          </div>
+
           <div class="live-test-body">
             <!-- LEFT COLUMN (25%) -->
             <div class="live-test-left-col">
@@ -1939,12 +2314,16 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="live-test-left-footer">
                 <div class="live-test-timer-badge">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.24 16.24L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span id="quant-test-timer-val">${renderTimeDigitGroupHtml(formatTime(quantSecondsRemaining), false)}</span>
+                  <span id="quant-test-timer-val">${renderTimeDigitGroupHtml(formatTime(quantSecondsRemaining), null, false)}</span>
                 </div>
+                <button class="btn-toggle-calm ${isCalmMode ? "active" : ""}" id="quant-test-calm-toggle-btn" title="Toggle Calm Mode">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.7 7.7A2.5 2.5 0 1 1 19.5 12H2M9.6 4.6A2 2 0 1 1 11 8H2M12.6 19.4A2 2 0 1 0 14 16H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Calm</span>
+                </button>
                 <button class="btn-toggle-live-theme" id="quant-test-theme-toggle-btn" title="Toggle Light/Dark Theme">
                   ${quantPrefState.theme === "dark"
-                    ? `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
-                    : `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+          ? `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
+          : `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
                   <span>${quantPrefState.theme === "dark" ? "Light" : "Dark"}</span>
                 </button>
                 <button class="btn-leave-test" id="quant-test-exit-btn"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.8105 2C22.3973 8.57225 22.3973 15.4277 20.8105 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 11.95H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.20081 16.8999L2.59082 13.3899C2.40292 13.2115 2.25331 12.9966 2.15106 12.7585C2.04881 12.5204 1.99609 12.264 1.99609 12.0049C1.99609 11.7458 2.04881 11.4893 2.15106 11.2512C2.25331 11.0131 2.40292 10.7983 2.59082 10.6199L6.20081 7.09985" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Leave</button>
@@ -1953,46 +2332,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <!-- MIDDLE COLUMN (50%) -->
             <div class="live-test-main-col">
-              <div class="live-q-text ${doAnim ? "q-animating" : ""}">${qData.q}</div>
-
-              <div class="live-options-list ${doAnim ? "is-animating" : ""}">
-                ${qData.opts.map((opt, idx) => {
-                  const selectedIdx = quantUserAnswers[quantCurrentQIndex];
-                  const isSelected = selectedIdx === idx;
-                  let optionClass = "live-option-card" + (isSelected ? " selected" : "");
-                  if (selectedIdx !== undefined && !isExam) {
-                    if (idx === qData.correct) optionClass += " option-correct";
-                    else if (isSelected) optionClass += " option-wrong";
-                  }
-
-                  return `
-                    <div class="${optionClass}" data-opt-idx="${idx}">
-                      <div class="live-option-num">${String.fromCharCode(65 + idx)}</div>
-                      <div class="live-option-text">${opt}</div>
-                      <div class="live-option-radio">
-                        <span class="radio-outer"><span class="radio-inner"></span></span>
-                      </div>
-                    </div>
-                  `;
-                }).join("")}
-              </div>
-
-              ${!isExam && quantUserAnswers[quantCurrentQIndex] !== undefined ? `
-                <div class="live-feedback-box ${quantUserAnswers[quantCurrentQIndex] === qData.correct ? "correct" : "wrong"}">
-                  <strong>${quantUserAnswers[quantCurrentQIndex] === qData.correct ? "✓ Correct Answer!" : "✗ Incorrect"}</strong>
-                  <p style="margin-top: 4px;">${qData.exp}</p>
+              <div class="live-q-normal-content" id="quant-live-q-normal-content">
+                <div class="live-q-meta-header">
+                  <span class="live-q-tag-ch" style="font-size: 0.74rem; font-weight: 600; padding: 4px 10px; border-radius: 60px; background: rgba(37, 99, 235, 0.12); color: #2563eb;">${qData.chName || 'Quantitative Aptitude'}</span>
+                  ${getDifficultyShapeHtml(qData.difficulty)}
                 </div>
-              ` : ""}
+                <div class="live-q-text ${doAnim ? "q-animating" : ""}">${qData.q}</div>
 
-              <div class="live-test-footer">
-                <button class="btn-instant-help" id="quant-test-btn-instant-help" type="button" title="Get Instant Help">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/>
-                  </svg>
-                  <span>Get Instant Help</span>
-                </button>
-                <button class="btn-wizard btn-prev btn-live-prev" id="quant-test-btn-prev" ${quantCurrentQIndex === 0 ? "disabled" : ""}>Previous</button>
-                <button class="btn-wizard btn-next btn-live-next" id="quant-test-btn-next">${quantCurrentQIndex === totalQ - 1 ? "Submit & View Results" : "Save & Next"}</button>
+                <div class="live-options-list ${doAnim ? "is-animating" : ""}">
+                  ${qData.opts.map((opt, idx) => {
+              const selectedIdx = quantUserAnswers[quantCurrentQIndex];
+              const isSelected = selectedIdx === idx;
+              let optionClass = "live-option-card" + (isSelected ? " selected" : "");
+              if (selectedIdx !== undefined && !isExam) {
+                if (idx === qData.correct) optionClass += " option-correct";
+                else if (isSelected) optionClass += " option-wrong";
+              }
+
+              return `
+                      <div class="${optionClass}" data-opt-idx="${idx}">
+                        <div class="live-option-num">${String.fromCharCode(65 + idx)}</div>
+                        <div class="live-option-text">${opt}</div>
+                        <div class="live-option-radio">
+                          <span class="radio-outer"><span class="radio-inner"></span></span>
+                        </div>
+                      </div>
+                    `;
+            }).join("")}
+                </div>
+
+                ${!isExam && quantUserAnswers[quantCurrentQIndex] !== undefined ? `
+                  <div class="live-feedback-box ${quantUserAnswers[quantCurrentQIndex] === qData.correct ? "correct" : "wrong"}">
+                    <strong>${quantUserAnswers[quantCurrentQIndex] === qData.correct ? "✓ Correct Answer!" : "✗ Incorrect"}</strong>
+                    <p style="margin-top: 4px;">${qData.exp}</p>
+                  </div>
+                ` : ""}
+
+                ${(() => {
+            const isAnswered = quantUserAnswers[quantCurrentQIndex] !== undefined;
+            const isMuted = !isExam && !isAnswered;
+            return `
+                    <div class="live-test-footer">
+                      <div class="instant-help-wrapper${isMuted ? " is-muted" : ""}" id="quant-instant-help-wrapper">
+                        <button class="btn-instant-help${isMuted ? " muted" : ""}" id="quant-test-btn-instant-help" type="button" ${isMuted ? 'disabled aria-disabled="true"' : 'title="Get Instant Help"'}>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/>
+                          </svg>
+                          <span>Get Instant Help</span>
+                        </button>
+                        <div class="instant-help-tooltip" id="quant-instant-help-tooltip" role="tooltip">Answer this question honestly to enable this button</div>
+                      </div>
+                  `;
+          })()}
+                  <button class="btn-wizard btn-prev btn-live-prev" id="quant-test-btn-prev" ${quantCurrentQIndex === 0 ? "disabled" : ""}>Previous</button>
+                  <button class="btn-wizard btn-next btn-live-next" id="quant-test-btn-next">${quantCurrentQIndex === totalQ - 1 ? "Submit & View Results" : "Save & Next"}</button>
+                </div>
               </div>
             </div>
 
@@ -2016,19 +2410,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
               <div class="palette-grid-container">
                 ${Array.from({ length: totalQ }, (_, i) => {
-                  let btnClass = "palette-grid-btn";
-                  if (i === quantCurrentQIndex) btnClass += " active-current";
-                  if (quantUserAnswers[i] !== undefined) btnClass += " status-answered";
-                  else if (quantVisitedQuestions.has(i)) btnClass += " status-skipped";
-                  else btnClass += " status-not-visited";
+          let btnClass = "palette-grid-btn";
+          if (i === quantCurrentQIndex) btnClass += " active-current";
+          if (quantUserAnswers[i] !== undefined) btnClass += " status-answered";
+          else if (quantVisitedQuestions.has(i)) btnClass += " status-skipped";
+          else btnClass += " status-not-visited";
 
-                  return `
+          return `
                     <button class="${btnClass}" data-q-idx="${i}">
                       <span class="palette-btn-num">${i + 1}</span>
                       <span class="palette-btn-dot" ${quantVisitedQuestions.has(i) && quantUserAnswers[i] === undefined ? 'style="background:#2563eb;"' : ""}></span>
                     </button>
                   `;
-                }).join("")}
+        }).join("")}
               </div>
             </div>
           </div>
@@ -2045,6 +2439,21 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelector(".main-content-area")?.classList.remove("live-test-theme-dark");
       }
 
+      const quantCalmToggleBtn = document.getElementById("quant-test-calm-toggle-btn");
+      if (quantCalmToggleBtn) {
+        quantCalmToggleBtn.addEventListener("click", () => {
+          isCalmMode = !isCalmMode;
+          try {
+            localStorage.setItem("study_portal_calm_mode", isCalmMode ? "true" : "false");
+          } catch (e) {}
+          const wrapper = quantTestSessionContainer.querySelector(".live-test-wrapper");
+          if (wrapper) {
+            wrapper.classList.toggle("calm-mode-active", isCalmMode);
+          }
+          quantCalmToggleBtn.classList.toggle("active", isCalmMode);
+        });
+      }
+
       const quantThemeToggleBtn = document.getElementById("quant-test-theme-toggle-btn");
       if (quantThemeToggleBtn) {
         quantThemeToggleBtn.addEventListener("click", () => {
@@ -2054,8 +2463,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const exitBtn = document.getElementById("quant-test-exit-btn");
+      const leaveOverlay = document.getElementById("quant-test-leave-overlay");
+      const leaveCancelBtn = document.getElementById("quant-btn-leave-cancel");
+      const leaveConfirmBtn = document.getElementById("quant-btn-leave-confirm");
+
       if (exitBtn) {
-        exitBtn.addEventListener("click", exitQuantTestSession);
+        exitBtn.addEventListener("click", () => {
+          if (leaveOverlay) {
+            leaveOverlay.classList.add("active");
+            leaveOverlay.setAttribute("aria-hidden", "false");
+          } else {
+            exitQuantTestSession();
+          }
+        });
         exitBtn.addEventListener("mouseenter", () => {
           document.querySelector(".live-test-body")?.classList.add("leave-hover-active");
           document.querySelector(".main-content-area")?.classList.add("leave-hover-active");
@@ -2066,12 +2486,61 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
+      if (leaveCancelBtn) {
+        leaveCancelBtn.addEventListener("click", () => {
+          if (leaveOverlay) {
+            leaveOverlay.classList.remove("active");
+            leaveOverlay.setAttribute("aria-hidden", "true");
+          }
+        });
+      }
+
+      if (leaveConfirmBtn) {
+        leaveConfirmBtn.addEventListener("click", () => {
+          if (leaveOverlay) {
+            leaveOverlay.classList.remove("active");
+            leaveOverlay.setAttribute("aria-hidden", "true");
+          }
+          exitQuantTestSession();
+        });
+      }
+
+      function updateQuantPaletteCounts() {
+        let ans = 0, skp = 0, nvis = 0;
+        for (let i = 0; i < totalQ; i++) {
+          if (quantUserAnswers[i] !== undefined) ans++;
+          else if (quantVisitedQuestions.has(i)) skp++;
+          else nvis++;
+        }
+        const ansEl = quantTestSessionContainer.querySelector(".palette-status-pill.answered .status-num");
+        const skpEl = quantTestSessionContainer.querySelector(".palette-status-pill.skipped .status-num");
+        const nvisEl = quantTestSessionContainer.querySelector(".palette-status-pill.not-visited .status-num");
+        if (ansEl) ansEl.textContent = ans;
+        if (skpEl) skpEl.textContent = skp;
+        if (nvisEl) nvisEl.textContent = nvis;
+      }
+
       const optBtns = quantTestSessionContainer.querySelectorAll(".live-option-card");
       optBtns.forEach((card) => {
         card.addEventListener("click", () => {
           if (!isExam && quantUserAnswers[quantCurrentQIndex] !== undefined) return;
           const optIdx = parseInt(card.getAttribute("data-opt-idx"));
           quantUserAnswers[quantCurrentQIndex] = optIdx;
+
+          if (isExam) {
+            optBtns.forEach((c) => {
+              const cIdx = parseInt(c.getAttribute("data-opt-idx"));
+              c.classList.toggle("selected", cIdx === optIdx);
+            });
+            const palBtn = quantTestSessionContainer.querySelector(`.palette-grid-btn[data-q-idx="${quantCurrentQIndex}"]`);
+            if (palBtn) {
+              palBtn.classList.remove("status-skipped", "status-not-visited");
+              palBtn.classList.add("status-answered");
+            }
+            updateQuantPaletteCounts();
+            return;
+          }
+
           shouldAnimateQuantSwitch = false;
           renderQuantCurrentQuestion();
         });
@@ -2116,9 +2585,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
+      const quantHelpWrapper = document.getElementById("quant-instant-help-wrapper");
+      if (quantHelpWrapper) {
+        quantHelpWrapper.addEventListener("click", (e) => {
+          if (quantHelpWrapper.classList.contains("is-muted")) {
+            e.preventDefault();
+            e.stopPropagation();
+            quantHelpWrapper.classList.add("show-tooltip");
+            clearTimeout(quantHelpWrapper._tooltipTimeout);
+            quantHelpWrapper._tooltipTimeout = setTimeout(() => {
+              quantHelpWrapper.classList.remove("show-tooltip");
+            }, 2500);
+          }
+        });
+      }
+
       const quantHelpBtn = document.getElementById("quant-test-btn-instant-help");
       if (quantHelpBtn) {
         quantHelpBtn.addEventListener("click", () => {
+          if (quantHelpBtn.classList.contains("muted") || quantHelpBtn.disabled) return;
           if (typeof window.openInstantHelpModal === "function") {
             window.openInstantHelpModal({
               question: qData.q,
@@ -2369,11 +2854,11 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-    const refreshDashBtn = document.getElementById("btn-refresh-dashboard");
-    if (refreshDashBtn) {
-      refreshDashBtn.addEventListener("click", () => {
-        if (window.EcoDashboard && typeof window.EcoDashboard.renderDashboard === "function") {
-          window.EcoDashboard.renderDashboard();
-        }
-      });
+const refreshDashBtn = document.getElementById("btn-refresh-dashboard");
+if (refreshDashBtn) {
+  refreshDashBtn.addEventListener("click", () => {
+    if (window.EcoDashboard && typeof window.EcoDashboard.renderDashboard === "function") {
+      window.EcoDashboard.renderDashboard();
     }
+  });
+}
