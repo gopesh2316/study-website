@@ -1725,6 +1725,7 @@ document.addEventListener("DOMContentLoaded", () => {
               chapter: qData.chName || getChapterName(qData.chId, false),
               selectedOptionIndex: userAnswers[currentQIndex],
               selectedOptionText: userAnswers[currentQIndex] !== undefined ? qData.opts[userAnswers[currentQIndex]] : null,
+              correctOptionIndex: qData.correct,
               mode: preferenceState.mode,
               qNum: currentQIndex + 1,
               totalQ: totalQ
@@ -2612,6 +2613,7 @@ document.addEventListener("DOMContentLoaded", () => {
               chapter: qData.chName || getChapterName(qData.chId, true),
               selectedOptionIndex: quantUserAnswers[quantCurrentQIndex],
               selectedOptionText: quantUserAnswers[quantCurrentQIndex] !== undefined ? qData.opts[quantUserAnswers[quantCurrentQIndex]] : null,
+              correctOptionIndex: qData.correct,
               mode: quantPrefState.mode,
               qNum: quantCurrentQIndex + 1,
               totalQ: totalQ

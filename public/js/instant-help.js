@@ -152,10 +152,16 @@
       chapter = 'General',
       selectedOptionIndex,
       selectedOptionText,
+      correctOptionIndex,
+      correctIndex,
       mode = 'practice',
       qNum = 1,
       totalQ = 10
     } = context || {};
+
+    const targetCorrectIndex = (correctOptionIndex !== undefined && correctOptionIndex !== null)
+      ? Number(correctOptionIndex)
+      : (correctIndex !== undefined && correctIndex !== null ? Number(correctIndex) : null);
 
     const isExam = mode === 'exam';
 
@@ -166,6 +172,7 @@
       chapter,
       selectedOptionIndex,
       selectedOptionText,
+      correctOptionIndex: targetCorrectIndex,
       mode,
       initialData: null,
       retrievedPassage: null,
@@ -228,16 +235,31 @@
           ${Array.isArray(options) && options.length > 0 ? `
             <div class="instant-help-q-options">
               ${options.map((opt, idx) => {
-      const isSelected = selectedOptionIndex === idx;
-      const letter = String.fromCharCode(65 + idx);
-      return `
-                  <div class="instant-help-q-opt-item ${isSelected ? 'opt-selected' : ''}">
+                const isSelected = selectedOptionIndex !== undefined && selectedOptionIndex !== null && Number(selectedOptionIndex) === idx;
+                const isCorrect = targetCorrectIndex !== null && targetCorrectIndex === idx;
+                const letter = String.fromCharCode(65 + idx);
+
+                let itemClasses = 'instant-help-q-opt-item';
+                if (isCorrect) itemClasses += ' opt-correct';
+                if (isSelected) itemClasses += ' opt-selected';
+
+                let tagHtml = '';
+                if (isCorrect && isSelected) {
+                  tagHtml = '<span class="opt-tag opt-tag-correct">Correct</span><span class="opt-tag opt-tag-selected">Your Choice</span>';
+                } else if (isCorrect) {
+                  tagHtml = '<span class="opt-tag opt-tag-correct">Correct</span>';
+                } else if (isSelected) {
+                  tagHtml = '<span class="opt-tag opt-tag-selected opt-tag-wrong">Selected</span>';
+                }
+
+                return `
+                  <div class="${itemClasses}">
                     <span class="opt-letter">${letter}</span>
                     <span class="opt-label">${escapeHtml(opt)}</span>
-                    ${isSelected ? `<span class="opt-tag">Selected</span>` : ''}
+                    ${tagHtml}
                   </div>
                 `;
-    }).join('')}
+              }).join('')}
             </div>
           ` : ''}
         </div>
