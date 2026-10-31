@@ -564,7 +564,7 @@
                   <div class="custom-input-box">
                     <i class="fa-solid fa-hashtag custom-input-icon"></i>
                     <input type="number" id="custom-qcount-input" min="1" max="100" placeholder="e.g. 25"
-                      class="custom-q-input">
+                      class="custom-q-input" oninput="if(Number(this.value)>100) this.value=100;">
                     <span class="custom-input-unit">Questions</span>
                   </div>
                   <div class="custom-input-hint"><i class="fa-solid fa-circle-info"></i> Enter any number from 1 to 100 (Max 100 questions per test)
@@ -967,7 +967,7 @@
                   <div class="custom-input-box">
                     <i class="fa-solid fa-hashtag custom-input-icon"></i>
                     <input type="number" id="quant-custom-qcount-input" min="1" max="100" placeholder="e.g. 25"
-                      class="custom-q-input">
+                      class="custom-q-input" oninput="if(Number(this.value)>100) this.value=100;">
                     <span class="custom-input-unit">Questions</span>
                   </div>
                   <div class="custom-input-hint"><i class="fa-solid fa-circle-info"></i> Enter any number from 1 to 100 (Max 100 questions per test)

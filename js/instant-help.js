@@ -30,9 +30,9 @@
   }
 
   /**
-   * Streams text word-by-word into targetEl with a smooth blur appearing effect.
+   * Streams text word-by-word into targetEl with a smooth blur appearing effect (fast & subtle blur).
    */
-  function streamWordByWord(targetEl, text, onWordAdded, onComplete, speedMs = 28) {
+  function streamWordByWord(targetEl, text, onWordAdded, onComplete, speedMs = 15) {
     if (!targetEl || !text) {
       if (typeof onComplete === 'function') onComplete();
       return;
@@ -70,8 +70,8 @@
 
         if (typeof gsap !== 'undefined' && gsap.fromTo) {
           gsap.fromTo(span,
-            { opacity: 0, filter: 'blur(8px)', y: 3 },
-            { opacity: 1, filter: 'blur(0px)', y: 0, duration: 0.35, ease: 'power2.out' }
+            { opacity: 0, filter: 'blur(2.5px)', y: 2 },
+            { opacity: 1, filter: 'blur(0px)', y: 0, duration: 0.18, ease: 'power2.out' }
           );
         }
       }

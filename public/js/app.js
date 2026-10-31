@@ -906,7 +906,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const wrap = document.getElementById("custom-qcount-wrap");
             if (wrap) wrap.classList.remove("hidden");
             const customInput = document.getElementById("custom-qcount-input");
-            const parsed = parseInt(customInput?.value, 10);
+            let parsed = parseInt(customInput?.value, 10);
+            if (parsed > 100) {
+              parsed = 100;
+              if (customInput) customInput.value = "100";
+            }
             preferenceState.qcount = (!isNaN(parsed) && parsed >= 1 && parsed <= 100) ? parsed : 25;
             if (customInput && !customInput.value) customInput.value = preferenceState.qcount;
           } else if (stateKey === "qcount") {
@@ -1027,8 +1031,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const customInput = document.getElementById("custom-qcount-input");
     if (customInput) {
       customInput.addEventListener("input", () => {
-        let val = parseInt(customInput.value) || 10;
-        val = Math.max(5, Math.min(100, val));
+        let val = parseInt(customInput.value, 10);
+        if (isNaN(val)) return;
+        if (val > 100) {
+          val = 100;
+          customInput.value = "100";
+        } else if (val < 1 && customInput.value !== "") {
+          val = 1;
+        }
+        preferenceState.qcount = val;
+      });
+      customInput.addEventListener("blur", () => {
+        let val = parseInt(customInput.value, 10);
+        if (isNaN(val) || val < 1) val = 10;
+        else if (val > 100) val = 100;
+        customInput.value = String(val);
         preferenceState.qcount = val;
       });
     }
@@ -1558,7 +1575,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (themeToggleBtn) {
         themeToggleBtn.addEventListener("click", () => {
           preferenceState.theme = preferenceState.theme === "dark" ? "light" : "dark";
-          renderCurrentQuestion();
+          const isDark = preferenceState.theme === "dark";
+          testSessionContainer.classList.toggle("live-test-theme-dark", isDark);
+          document.querySelector(".main-content-area")?.classList.toggle("live-test-theme-dark", isDark);
+          const wrapper = testSessionContainer.querySelector(".live-test-wrapper");
+          if (wrapper) wrapper.classList.toggle("live-test-theme-dark", isDark);
         });
       }
 
@@ -2124,7 +2145,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const wrap = document.getElementById("quant-custom-qcount-wrap");
             if (wrap) wrap.classList.remove("hidden");
             const customInput = document.getElementById("quant-custom-qcount-input");
-            const parsed = parseInt(customInput?.value, 10);
+            let parsed = parseInt(customInput?.value, 10);
+            if (parsed > 100) {
+              parsed = 100;
+              if (customInput) customInput.value = "100";
+            }
             quantPrefState.qcount = (!isNaN(parsed) && parsed >= 1 && parsed <= 100) ? parsed : 25;
             if (customInput && !customInput.value) customInput.value = quantPrefState.qcount;
           } else if (stateKey === "qcount") {
@@ -2147,8 +2172,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const quantCustomInput = document.getElementById("quant-custom-qcount-input");
     if (quantCustomInput) {
       quantCustomInput.addEventListener("input", () => {
-        let val = parseInt(quantCustomInput.value) || 10;
-        val = Math.max(5, Math.min(100, val));
+        let val = parseInt(quantCustomInput.value, 10);
+        if (isNaN(val)) return;
+        if (val > 100) {
+          val = 100;
+          quantCustomInput.value = "100";
+        } else if (val < 1 && quantCustomInput.value !== "") {
+          val = 1;
+        }
+        quantPrefState.qcount = val;
+      });
+      quantCustomInput.addEventListener("blur", () => {
+        let val = parseInt(quantCustomInput.value, 10);
+        if (isNaN(val) || val < 1) val = 10;
+        else if (val > 100) val = 100;
+        quantCustomInput.value = String(val);
         quantPrefState.qcount = val;
       });
     }
@@ -2459,7 +2497,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (quantThemeToggleBtn) {
         quantThemeToggleBtn.addEventListener("click", () => {
           quantPrefState.theme = quantPrefState.theme === "dark" ? "light" : "dark";
-          renderQuantCurrentQuestion();
+          const isDark = quantPrefState.theme === "dark";
+          quantTestSessionContainer.classList.toggle("live-test-theme-dark", isDark);
+          document.querySelector(".main-content-area")?.classList.toggle("live-test-theme-dark", isDark);
+          const wrapper = quantTestSessionContainer.querySelector(".live-test-wrapper");
+          if (wrapper) wrapper.classList.toggle("live-test-theme-dark", isDark);
         });
       }
 
