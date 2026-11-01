@@ -200,15 +200,8 @@
       <!-- Dialog Header -->
       <div class="instant-help-header">
         <div class="instant-help-title-group">
-          <button class="btn-instant-help-back" id="instant-help-back-btn" type="button" title="Back to Question">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            <span>Back to Question</span>
-          </button>
           <div class="instant-help-icon-wrap">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/>
             </svg>
           </div>
@@ -219,7 +212,12 @@
             </span>
           </div>
         </div>
-        <button class="instant-help-close-btn" id="instant-help-x-btn" aria-label="Close instant help">&times;</button>
+        <button class="instant-help-close-btn" id="instant-help-x-btn" aria-label="Close instant help" type="button" title="Close Instant Help">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <!-- Scrollable Middle Section -->
@@ -270,20 +268,8 @@
         </div>
       </div>
 
-      <!-- STICKY BOTTOM FOLLOW-UP INPUT DOCK ("STILL HAVE A DOUBT?") -->
+      <!-- STICKY BOTTOM FOLLOW-UP INPUT DOCK -->
       <div class="instant-help-followup-dock" id="instant-help-followup-dock">
-        <div class="followup-dock-header">
-          <div class="followup-dock-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-              <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-            <span>STILL HAVE A DOUBT?</span>
-          </div>
-          <span class="followup-turn-badge" id="followup-turn-badge">3 follow-ups left</span>
-        </div>
-
         <div class="followup-input-row">
           <textarea
             id="instant-help-followup-input"
@@ -308,7 +294,8 @@
         </div>
 
         <div class="followup-meta-row">
-          <span class="followup-shortcut-hint">Enter to send &bull; Shift+Enter for new line</span>
+          <span class="followup-turn-badge" id="followup-turn-badge">3 follow-ups left</span>
+          <span class="followup-meta-dot">&bull;</span>
           <span class="followup-char-count" id="followup-char-count">0 / 1000</span>
         </div>
       </div>
@@ -477,7 +464,7 @@
           <!-- Explanation Section -->
           <div class="instant-help-sec" id="instant-help-exp-sec">
             <div class="instant-help-sec-header">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="16" x2="12" y2="12"></line>
                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -491,7 +478,7 @@
             <!-- Reasoning & Example Section -->
             <div class="instant-help-sec" id="instant-help-reasoning-sec" style="opacity: 0;">
               <div class="instant-help-sec-header">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
                 <span>Reasoning &amp; Example</span>
@@ -504,7 +491,7 @@
           <div class="instant-help-source-card" id="instant-help-source-card">
             <div class="source-card-top">
               <div class="source-card-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                 </svg>

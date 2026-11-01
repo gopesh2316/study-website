@@ -1396,6 +1396,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // Save current scroll position of the right palette sidebar before re-rendering
+      const prevSidebar = testSessionContainer.querySelector(".live-test-sidebar");
+      const savedSidebarScrollTop = prevSidebar ? prevSidebar.scrollTop : 0;
+      const prevGrid = testSessionContainer.querySelector(".palette-grid-container");
+      const savedGridScrollTop = prevGrid ? prevGrid.scrollTop : 0;
+
       const isDarkTheme = preferenceState.theme === "dark";
       const wrapperClass = "live-test-wrapper" + (isDarkTheme ? " live-test-theme-dark" : "") + (isCalmMode ? " calm-mode-active" : "");
 
@@ -1533,7 +1539,7 @@ document.addEventListener("DOMContentLoaded", () => {
           else btnClass += " status-not-visited";
 
           return `
-                    <button class="${btnClass}" data-q-idx="${i}">
+                    <button type="button" class="${btnClass}" data-q-idx="${i}">
                       <span class="palette-btn-num">${i + 1}</span>
                       <span class="palette-btn-dot"></span>
                     </button>
@@ -1546,6 +1552,22 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
 
       testSessionContainer.innerHTML = html;
+
+      // Restore palette sidebar scroll position so clicking questions doesn't jump to top
+      const currentSidebar = testSessionContainer.querySelector(".live-test-sidebar");
+      if (currentSidebar && savedSidebarScrollTop > 0) {
+        currentSidebar.scrollTop = savedSidebarScrollTop;
+        requestAnimationFrame(() => {
+          if (currentSidebar) currentSidebar.scrollTop = savedSidebarScrollTop;
+        });
+      }
+      const currentGrid = testSessionContainer.querySelector(".palette-grid-container");
+      if (currentGrid && savedGridScrollTop > 0) {
+        currentGrid.scrollTop = savedGridScrollTop;
+        requestAnimationFrame(() => {
+          if (currentGrid) currentGrid.scrollTop = savedGridScrollTop;
+        });
+      }
 
       if (isDarkTheme) {
         testSessionContainer.classList.add("live-test-theme-dark");
@@ -1580,6 +1602,10 @@ document.addEventListener("DOMContentLoaded", () => {
           document.querySelector(".main-content-area")?.classList.toggle("live-test-theme-dark", isDark);
           const wrapper = testSessionContainer.querySelector(".live-test-wrapper");
           if (wrapper) wrapper.classList.toggle("live-test-theme-dark", isDark);
+
+          const sunSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+          const moonSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+          themeToggleBtn.innerHTML = `${isDark ? sunSvg : moonSvg}<span>${isDark ? "Light" : "Dark"}</span>`;
         });
       }
 
@@ -1682,7 +1708,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const paletteBtns = testSessionContainer.querySelectorAll(".palette-grid-btn");
       paletteBtns.forEach((btn) => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
           const qIdx = parseInt(btn.getAttribute("data-q-idx"));
           if (currentQIndex !== qIdx) {
             currentQIndex = qIdx;
@@ -2322,6 +2349,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // Save current scroll position of the right palette sidebar before re-rendering
+      const prevQuantSidebar = quantTestSessionContainer.querySelector(".live-test-sidebar");
+      const savedQuantSidebarScrollTop = prevQuantSidebar ? prevQuantSidebar.scrollTop : 0;
+      const prevQuantGrid = quantTestSessionContainer.querySelector(".palette-grid-container");
+      const savedQuantGridScrollTop = prevQuantGrid ? prevQuantGrid.scrollTop : 0;
+
       let html = `
         <div class="live-test-wrapper ${quantPrefState.theme === "dark" ? "live-test-theme-dark" : ""} ${isCalmMode ? "calm-mode-active" : ""}">
           <!-- Full Red Leave Confirmation Overlay -->
@@ -2456,7 +2489,7 @@ document.addEventListener("DOMContentLoaded", () => {
           else btnClass += " status-not-visited";
 
           return `
-                    <button class="${btnClass}" data-q-idx="${i}">
+                    <button type="button" class="${btnClass}" data-q-idx="${i}">
                       <span class="palette-btn-num">${i + 1}</span>
                       <span class="palette-btn-dot" ${quantVisitedQuestions.has(i) && quantUserAnswers[i] === undefined ? 'style="background:#2563eb;"' : ""}></span>
                     </button>
@@ -2469,6 +2502,22 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
 
       quantTestSessionContainer.innerHTML = html;
+
+      // Restore palette sidebar scroll position so clicking questions doesn't jump to top
+      const currentQuantSidebar = quantTestSessionContainer.querySelector(".live-test-sidebar");
+      if (currentQuantSidebar && savedQuantSidebarScrollTop > 0) {
+        currentQuantSidebar.scrollTop = savedQuantSidebarScrollTop;
+        requestAnimationFrame(() => {
+          if (currentQuantSidebar) currentQuantSidebar.scrollTop = savedQuantSidebarScrollTop;
+        });
+      }
+      const currentQuantGrid = quantTestSessionContainer.querySelector(".palette-grid-container");
+      if (currentQuantGrid && savedQuantGridScrollTop > 0) {
+        currentQuantGrid.scrollTop = savedQuantGridScrollTop;
+        requestAnimationFrame(() => {
+          if (currentQuantGrid) currentQuantGrid.scrollTop = savedQuantGridScrollTop;
+        });
+      }
 
       if (quantPrefState.theme === "dark") {
         quantTestSessionContainer.classList.add("live-test-theme-dark");
@@ -2502,6 +2551,10 @@ document.addEventListener("DOMContentLoaded", () => {
           document.querySelector(".main-content-area")?.classList.toggle("live-test-theme-dark", isDark);
           const wrapper = quantTestSessionContainer.querySelector(".live-test-wrapper");
           if (wrapper) wrapper.classList.toggle("live-test-theme-dark", isDark);
+
+          const sunSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+          const moonSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+          quantThemeToggleBtn.innerHTML = `${isDark ? sunSvg : moonSvg}<span>${isDark ? "Light" : "Dark"}</span>`;
         });
       }
 
@@ -2591,7 +2644,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const paletteBtns = quantTestSessionContainer.querySelectorAll(".palette-grid-btn");
       paletteBtns.forEach((btn) => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
           const qIdx = parseInt(btn.getAttribute("data-q-idx"));
           if (quantCurrentQIndex !== qIdx) {
             quantCurrentQIndex = qIdx;
