@@ -6658,9 +6658,12 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 
 /* Follow-up Loading Indicator with Thinking Orb / Typing Dots */
 .chat-turn-loading,
-.instant-help-chat-turn.chat-turn-loading {
+.instant-help-chat-turn.chat-turn-loading,
+.instant-help-inline .chat-turn-loading,
+.instant-help-inline .instant-help-chat-turn.chat-turn-loading {
   display: flex !important;
-  align-items: flex-start !important;
+  flex-direction: row !important;
+  align-items: center !important;
   justify-content: flex-start !important;
   width: 100% !important;
   text-align: left !important;
@@ -6669,7 +6672,10 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .chat-turn-loading .chat-bubble,
-.instant-help-chat-turn.chat-turn-loading .chat-bubble {
+.instant-help-chat-turn.chat-turn-loading .chat-bubble,
+.instant-help-inline .chat-turn-loading .chat-bubble,
+.instant-help-inline .instant-help-chat-turn.chat-turn-loading .chat-bubble,
+.instant-help-inline .instant-help-chat-turn.assistant-turn.chat-turn-loading .chat-bubble {
   display: inline-flex !important;
   flex-direction: row !important;
   align-items: center !important;
@@ -6683,7 +6689,8 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   box-shadow: none !important;
 }
 
-.chat-turn-loading .followup-orb-slot {
+.chat-turn-loading .followup-orb-slot,
+.instant-help-inline .chat-turn-loading .followup-orb-slot {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -6695,21 +6702,26 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   flex-shrink: 0 !important;
 }
 
-.chat-turn-loading .followup-orb-slot canvas {
+.chat-turn-loading .followup-orb-slot canvas,
+.instant-help-inline .chat-turn-loading .followup-orb-slot canvas {
   display: block !important;
   margin: 0 !important;
 }
 
-.chat-turn-loading .chat-loading-text {
+.chat-turn-loading .chat-loading-text,
+.instant-help-inline .chat-turn-loading .chat-loading-text {
+  display: inline-block !important;
   font-size: 0.85rem !important;
   color: #64748b !important;
   font-weight: 500 !important;
   line-height: 1 !important;
   margin: 0 !important;
   letter-spacing: -0.01em !important;
+  vertical-align: middle !important;
 }
 
-.live-test-theme-dark .chat-turn-loading .chat-loading-text {
+.live-test-theme-dark .chat-turn-loading .chat-loading-text,
+.live-test-theme-dark .instant-help-inline .chat-turn-loading .chat-loading-text {
   color: #94a3b8 !important;
 }
 
@@ -6901,14 +6913,192 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .live-q-diff-shape {
+  position: relative !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-left: auto;
-  padding: 4px;
-  border-radius: 6px;
+  padding: 4px 6px;
+  border-radius: 8px;
   line-height: 1;
-  cursor: default;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  user-select: none;
+}
+
+.live-q-diff-shape:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.live-test-theme-dark .live-q-diff-shape:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.diff-shape-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Tooltip Popover Card */
+.diff-shape-tooltip {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: 0;
+  min-width: 215px;
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px) scale(0.97);
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.18s;
+  white-space: nowrap;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+/* Caret / arrow pointing up */
+.diff-shape-tooltip::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border-left: 1px solid #e2e8f0;
+  border-top: 1px solid #e2e8f0;
+  transform: rotate(45deg);
+  box-sizing: border-box;
+}
+
+/* Hover & Focus Reveal */
+.live-q-diff-shape:hover .diff-shape-tooltip,
+.live-q-diff-shape:focus .diff-shape-tooltip,
+.live-q-diff-shape:focus-within .diff-shape-tooltip {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.diff-tooltip-header {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 7px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.diff-tooltip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.diff-tooltip-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  color: #334155;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background-color 0.12s ease;
+}
+
+.diff-tooltip-item.is-current {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.diff-tooltip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.diff-tooltip-name {
+  font-weight: 600;
+  color: inherit;
+}
+
+.diff-tooltip-eq {
+  color: #94a3b8;
+  user-select: none;
+}
+
+.diff-tooltip-val {
+  color: #64748b;
+}
+
+.diff-tooltip-item.is-current .diff-tooltip-val {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* ============================================================
+   DARK THEME COMPATIBILITY FOR DIFFICULTY TOOLTIP
+   ============================================================ */
+.live-test-theme-dark .diff-shape-tooltip,
+[data-theme="dark"] .diff-shape-tooltip {
+  background: #1c1c1f !important;
+  color: #f8fafc !important;
+  border-color: #2e2e33 !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55) !important;
+}
+
+.live-test-theme-dark .diff-shape-tooltip::before,
+[data-theme="dark"] .diff-shape-tooltip::before {
+  background: #1c1c1f !important;
+  border-left-color: #2e2e33 !important;
+  border-top-color: #2e2e33 !important;
+}
+
+.live-test-theme-dark .diff-tooltip-header,
+[data-theme="dark"] .diff-tooltip-header {
+  color: #a1a1aa !important;
+  border-bottom-color: #2a2a2e !important;
+}
+
+.live-test-theme-dark .diff-tooltip-item,
+[data-theme="dark"] .diff-tooltip-item {
+  color: #cbd5e1 !important;
+}
+
+.live-test-theme-dark .diff-tooltip-item.is-current,
+[data-theme="dark"] .diff-tooltip-item.is-current {
+  background: #27272b !important;
+  color: #ffffff !important;
+}
+
+.live-test-theme-dark .diff-tooltip-eq,
+[data-theme="dark"] .diff-tooltip-eq {
+  color: #52525b !important;
+}
+
+.live-test-theme-dark .diff-tooltip-val,
+[data-theme="dark"] .diff-tooltip-val {
+  color: #a1a1aa !important;
+}
+
+.live-test-theme-dark .diff-tooltip-item.is-current .diff-tooltip-val,
+[data-theme="dark"] .diff-tooltip-item.is-current .diff-tooltip-val {
+  color: #ffffff !important;
 }
 
 /* Instant Help Tooltip & Muted State */
@@ -7356,10 +7546,11 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   color: #0f172a;
   background: #f1f5f9;
   transition: 0s;
+
 }
 
 .instant-help-inline .instant-help-content-scroll {
-  padding: 28px 36px 24px 36px !important;
+  padding: 36px 36px 24px 36px !important;
   background-color: transparent !important;
   box-sizing: border-box !important;
   width: 100% !important;

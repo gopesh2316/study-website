@@ -1362,13 +1362,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function getDifficultyShapeHtml(diff) {
       const d = (diff || "medium").toLowerCase();
-      if (d === "easy") {
-        return `<span class="live-q-diff-shape" title="Difficulty: Easy" aria-label="Easy difficulty"><svg width="13" height="13" viewBox="0 0 24 24" fill="#16a34a" xmlns="http://www.w3.org/2000/svg"><polygon points="12,2 22,21 2,21"/></svg></span>`;
-      } else if (d === "hard") {
-        return `<span class="live-q-diff-shape" title="Difficulty: Hard" aria-label="Hard difficulty"><svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/></svg></span>`;
+      let currentSvg = '';
+      let diffTitle = 'Medium';
+      if (d === 'easy') {
+        currentSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#16a34a" xmlns="http://www.w3.org/2000/svg"><polygon points="12,2 22,21 2,21"/></svg>`;
+        diffTitle = 'Easy';
+      } else if (d === 'hard') {
+        currentSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/></svg>`;
+        diffTitle = 'Hard';
       } else {
-        return `<span class="live-q-diff-shape" title="Difficulty: Medium" aria-label="Medium difficulty"><svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span>`;
+        currentSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`;
+        diffTitle = 'Medium';
       }
+
+      return `<span class="live-q-diff-shape" tabindex="0" role="button" aria-label="Difficulty: ${diffTitle}. Hover to view difficulty legend.">
+        <span class="diff-shape-trigger">${currentSvg}</span>
+        <div class="diff-shape-tooltip" role="tooltip">
+          <div class="diff-tooltip-header">Question Difficulty</div>
+          <div class="diff-tooltip-list">
+            <div class="diff-tooltip-item${d === 'easy' ? ' is-current' : ''}">
+              <span class="diff-tooltip-icon">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="#16a34a" xmlns="http://www.w3.org/2000/svg"><polygon points="12,2 22,21 2,21"/></svg>
+              </span>
+              <span class="diff-tooltip-name">Triangle</span>
+              <span class="diff-tooltip-eq">=</span>
+              <span class="diff-tooltip-val">Easy questions</span>
+            </div>
+            <div class="diff-tooltip-item${d === 'medium' ? ' is-current' : ''}">
+              <span class="diff-tooltip-icon">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              </span>
+              <span class="diff-tooltip-name">Square</span>
+              <span class="diff-tooltip-eq">=</span>
+              <span class="diff-tooltip-val">Medium questions</span>
+            </div>
+            <div class="diff-tooltip-item${d === 'hard' ? ' is-current' : ''}">
+              <span class="diff-tooltip-icon">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/></svg>
+              </span>
+              <span class="diff-tooltip-name">Circle</span>
+              <span class="diff-tooltip-eq">=</span>
+              <span class="diff-tooltip-val">Hard questions</span>
+            </div>
+          </div>
+        </div>
+      </span>`;
     }
 
     let shouldAnimateEconSwitch = true;
