@@ -7359,7 +7359,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .instant-help-inline .instant-help-content-scroll {
-  padding: 18px 36px 24px 36px !important;
+  padding: 28px 36px 24px 36px !important;
   background-color: transparent !important;
   box-sizing: border-box !important;
   width: 100% !important;
