@@ -773,7 +773,7 @@
         loadingBubble.className = 'instant-help-chat-turn assistant-turn chat-turn-loading';
         loadingBubble.id = 'chat-turn-loading';
         loadingBubble.innerHTML = `
-          <div class="chat-bubble assistant-bubble" style="display: inline-flex; align-items: center; gap: 8px;">
+          <div class="chat-bubble assistant-bubble">
             <div class="followup-orb-slot"></div>
             <span class="chat-loading-text">Thinking...</span>
           </div>

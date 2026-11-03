@@ -6656,11 +6656,61 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   margin: 0;
 }
 
-/* Typing Dots Animation */
-.chat-turn-loading .chat-bubble {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 0.4rem;
+/* Follow-up Loading Indicator with Thinking Orb / Typing Dots */
+.chat-turn-loading,
+.instant-help-chat-turn.chat-turn-loading {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  text-align: left !important;
+  margin: 0.35rem 0 !important;
+  padding: 0 !important;
+}
+
+.chat-turn-loading .chat-bubble,
+.instant-help-chat-turn.chat-turn-loading .chat-bubble {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  padding: 0.4rem 0 !important;
+  margin: 0 !important;
+  text-align: left !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.chat-turn-loading .followup-orb-slot {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.chat-turn-loading .followup-orb-slot canvas {
+  display: block !important;
+  margin: 0 !important;
+}
+
+.chat-turn-loading .chat-loading-text {
+  font-size: 0.85rem !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.live-test-theme-dark .chat-turn-loading .chat-loading-text {
+  color: #94a3b8 !important;
 }
 
 .chat-typing-dots {
@@ -7629,7 +7679,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 .live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-text,
 .live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .example-text {
   font-size: 1rem !important;
-  font-weight: 400 !important;
+  font-weight: 100 !important;
   color: #e2e8f0 !important;
 }
 
