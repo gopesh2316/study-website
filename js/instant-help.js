@@ -553,8 +553,8 @@
             </div>
           ` : ''}
 
-          <!-- FEATURE 1: Student-Friendly Source Card -->
-          <div class="instant-help-source-card" id="instant-help-source-card">
+          <!-- FEATURE 1: Student-Friendly Source Card (revealed after reasoning & example) -->
+          <div class="instant-help-source-card" id="instant-help-source-card" style="display: none; opacity: 0;">
             <div class="source-card-top">
               <div class="source-card-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
@@ -619,6 +619,30 @@
       const expTarget = dynamicBody.querySelector('#stream-explanation-text');
       const reasoningSec = dynamicBody.querySelector('#instant-help-reasoning-sec');
       const reasoningTarget = dynamicBody.querySelector('#stream-reasoning-text');
+      const sourceCard = dynamicBody.querySelector('#instant-help-source-card');
+
+      function revealSourceCard() {
+        if (!sourceCard) return;
+        sourceCard.style.display = 'block';
+        if (typeof gsap !== 'undefined' && gsap.fromTo) {
+          gsap.fromTo(sourceCard,
+            { opacity: 0, y: 14 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.38,
+              ease: 'power2.out',
+              onComplete: () => {
+                if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+              }
+            }
+          );
+        } else {
+          sourceCard.style.opacity = '1';
+          sourceCard.style.transform = 'none';
+          if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        }
+      }
 
       streamWordByWord(expTarget, data.explanation, () => {
         if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
@@ -631,7 +655,13 @@
           }
           streamWordByWord(reasoningTarget, data.reasoning_example, () => {
             if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          }, () => {
+            // Reveal source card strictly after Reasoning & Example completes
+            revealSourceCard();
           });
+        } else {
+          // If no reasoning example, reveal source card after explanation
+          revealSourceCard();
         }
       });
 
