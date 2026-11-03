@@ -7750,14 +7750,14 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 .instant-help-inline .instant-help-followup-dock .followup-textarea {
   width: 100% !important;
   border-radius: 100px !important;
-  border: 1.5px solid #e2e8f0 !important;
+  border: 1.5px solid #f1f5f9 !important;
   outline: none !important;
   padding: 10.5px 52px 10.5px 20px !important;
   line-height: 22px !important;
   font-size: 0.88rem !important;
   font-family: inherit !important;
   height: 46px;
-  min-height: 46px !important;
+  min-height: 50px !important;
   max-height: 120px !important;
   box-sizing: border-box !important;
   background: #f1f5f9 !important;
@@ -7783,7 +7783,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 
 .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea {
   background: #242424 !important;
-  border: 1.5px solid #383838 !important;
+  border: 3.5px solid #242424 !important;
   color: #f8fafc !important;
 }
 

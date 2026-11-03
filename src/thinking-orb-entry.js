@@ -1,4 +1,41 @@
-import { MODE_FRAMES, STATE_TO_MODE, resolvePreset, paintFrame } from 'thinking-orbs/engine';
+import { MODE_FRAMES, STATE_TO_MODE, resolvePreset } from 'thinking-orbs/engine';
+
+/**
+ * Custom frame painter ensuring:
+ * - In white/light theme: dots & lines are crisp, deep black (rgba(0..35, 0..35, 0..35, alpha))
+ * - In dark theme: dots & lines are bright white (rgba(180..255, 180..255, 180..255, alpha))
+ */
+function paintOrbFrame(ctx, frame, isDark) {
+  // 1. Paint lines if present
+  if (frame.lines && frame.lines.length) {
+    for (const l of frame.lines) {
+      const alpha = l.a ?? 1;
+      if (alpha < 0.02) continue;
+      const w = Math.min(1, Math.max(0, l.white ?? 0));
+      const g = isDark ? Math.round((1 - w * 0.3) * 255) : Math.round(w * 35);
+      ctx.strokeStyle = `rgba(${g},${g},${g},${alpha})`;
+      ctx.lineWidth = l.w;
+      ctx.beginPath();
+      ctx.moveTo(l.x1, l.y1);
+      ctx.lineTo(l.x2, l.y2);
+      ctx.stroke();
+    }
+  }
+
+  // 2. Paint dots
+  if (frame.dots && frame.dots.length) {
+    for (const d of frame.dots) {
+      const alpha = d.a ?? 1;
+      if (alpha < 0.02) continue;
+      const w = Math.min(1, Math.max(0, d.white ?? 0));
+      const g = isDark ? Math.round((1 - w * 0.3) * 255) : Math.round(w * 35);
+      ctx.fillStyle = `rgba(${g},${g},${g},${alpha})`;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, Math.max(0.3, d.r), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
 
 export function createThinkingOrb({
   state = 'solving',
@@ -31,18 +68,38 @@ export function createThinkingOrb({
 
   function resolveDark() {
     if (typeof dark === 'boolean') return dark;
-    let node = canvas;
-    while (node) {
-      if (node.classList && (node.classList.contains('live-test-theme-dark') || node.classList.contains('dark'))) {
-        return true;
-      }
-      if (node.getAttribute && node.getAttribute('data-theme') === 'dark') {
-        return true;
-      }
-      node = node.parentElement;
+    
+    // Check canvas and its ancestors
+    if (canvas && typeof canvas.closest === 'function') {
+      const darkContainer = canvas.closest('.live-test-theme-dark, .dark, [data-theme="dark"]');
+      if (darkContainer) return true;
+      const lightContainer = canvas.closest('.live-test-wrapper:not(.live-test-theme-dark), .test-session-container:not(.live-test-theme-dark)');
+      if (lightContainer) return false;
     }
-    if (document.querySelector('.live-test-theme-dark')) return true;
-    return typeof matchMedia !== 'undefined' && matchMedia('(prefers-color-scheme: dark)').matches;
+
+    // Check active visible test session
+    const activeTestSession = document.querySelector('.test-session-container:not(.hidden)');
+    if (activeTestSession) {
+      return activeTestSession.classList.contains('live-test-theme-dark');
+    }
+
+    // Check active modal or main content
+    const activeModal = document.querySelector('.live-test-modal:not(.hidden)');
+    if (activeModal) {
+      return activeModal.classList.contains('live-test-theme-dark');
+    }
+
+    const mainArea = document.querySelector('.main-content-area');
+    if (mainArea) {
+      return mainArea.classList.contains('live-test-theme-dark');
+    }
+
+    if (document.body.classList.contains('live-test-theme-dark') || document.documentElement.classList.contains('live-test-theme-dark')) {
+      return true;
+    }
+
+    // Default to false (white theme -> black orb)
+    return false;
   }
 
   function resize() {
@@ -59,7 +116,7 @@ export function createThinkingOrb({
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, size, size);
     const isDark = resolveDark();
-    paintFrame(ctx, frameFn(size, tSec, preset.opts), isDark);
+    paintOrbFrame(ctx, frameFn(size, tSec, preset.opts), isDark);
   }
 
   function loop() {
