@@ -7210,14 +7210,12 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
    IN-PLACE INSTANT HELP IN LIVE TEST MAIN COLUMN
    ============================================================ */
 .live-test-main-col.in-instant-help {
-  padding-left: 36px !important;
-  padding-right: 36px !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+  padding: 0 !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
   position: relative !important;
+  box-sizing: border-box !important;
 }
 
 .live-q-normal-content {
@@ -7309,7 +7307,9 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   border-right: none !important;
   border-bottom: none !important;
   border-radius: 0 !important;
-  padding: 10px 0 16px 0 !important;
+  padding: 10px 36px 16px 36px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
   box-shadow: none !important;
 }
 
@@ -7322,15 +7322,16 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 /* Light Theme Styling for Instant Help Content */
 .instant-help-inline .instant-help-header {
   background-color: transparent !important;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #e2e8f0 !important;
   padding: 24px 36px 16px 36px !important;
-  margin-left: -36px !important;
-  margin-right: -36px !important;
-  width: calc(100% + 72px) !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
   box-sizing: border-box !important;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
 }
 
 .instant-help-inline .instant-help-title {
@@ -7351,8 +7352,10 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .instant-help-inline .instant-help-content-scroll {
-  padding: 18px 0 !important;
+  padding: 18px 36px 24px 36px !important;
   background-color: transparent !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
 }
 
 .instant-help-inline .instant-help-q-box {
@@ -7516,11 +7519,11 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   background-color: transparent !important;
   border-bottom: 1px solid #2a2a2a !important;
   align-items: center !important;
-  padding-left: 36px !important;
-  padding-right: 36px !important;
-  margin-left: -36px !important;
-  margin-right: -36px !important;
-  width: calc(100% + 72px) !important;
+  padding: 24px 36px 16px 36px !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
   box-sizing: border-box !important;
 }
 
@@ -7701,7 +7704,9 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  padding: 10px 0 16px 0 !important;
+  padding: 10px 36px 16px 36px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea {
