@@ -324,28 +324,30 @@
 
     // 2. Attach container to DOM and animate transformation
     if (mainCol) {
-      mainCol.classList.add('in-instant-help');
       if (normalContent) {
         if (typeof gsap !== 'undefined' && gsap.to) {
           gsap.to(normalContent, {
             opacity: 0,
             y: -18,
-            duration: 0.25,
+            duration: 0.22,
             ease: 'power2.inOut',
             onComplete: () => {
               normalContent.style.display = 'none';
+              mainCol.classList.add('in-instant-help');
               mainCol.appendChild(container);
               gsap.fromTo(container,
                 { opacity: 0, y: 18 },
-                { opacity: 1, y: 0, duration: 0.32, ease: 'power2.out' }
+                { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
               );
             }
           });
         } else {
           normalContent.style.display = 'none';
+          mainCol.classList.add('in-instant-help');
           mainCol.appendChild(container);
         }
       } else {
+        mainCol.classList.add('in-instant-help');
         mainCol.appendChild(container);
       }
     } else {

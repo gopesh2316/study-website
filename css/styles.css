@@ -7226,6 +7226,13 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   box-sizing: border-box;
 }
 
+/* Ensure question content keeps its 36px side padding even during modal transitions */
+.live-test-main-col.in-instant-help .live-q-normal-content {
+  padding-left: 36px !important;
+  padding-right: 36px !important;
+  box-sizing: border-box !important;
+}
+
 .instant-help-dialog.instant-help-inline {
   position: relative;
   width: 100% !important;
