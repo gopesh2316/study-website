@@ -29,20 +29,35 @@
       .replace(/'/g, '&#39;');
   }
 
+  function getInstantHelpEndpoint() {
+    if (typeof window !== 'undefined' && window.location) {
+      const port = window.location.port;
+      const host = window.location.hostname;
+      const proto = window.location.protocol;
+      if (proto === 'file:' || ((host === 'localhost' || host === '127.0.0.1') && port !== '8787')) {
+        return 'http://127.0.0.1:8787/api/instant-help';
+      }
+    }
+    return '/api/instant-help';
+  }
+
   /**
    * Streams text word-by-word into targetEl with a smooth blur appearing effect (fast & subtle blur).
    */
   function streamWordByWord(targetEl, text, onWordAdded, onComplete, speedMs = 15) {
     if (!targetEl || !text) {
       if (typeof onComplete === 'function') onComplete();
-      return;
+      return { cancel: () => {} };
     }
 
     targetEl.innerHTML = '';
     const tokens = String(text).split(/(\s+)/);
     let idx = 0;
+    let timer = null;
+    let isCancelled = false;
 
     function step() {
+      if (isCancelled) return;
       if (idx >= tokens.length) {
         if (typeof onComplete === 'function') onComplete();
         return;
@@ -52,7 +67,7 @@
       idx++;
 
       if (!token) {
-        setTimeout(step, speedMs);
+        timer = setTimeout(step, speedMs);
         return;
       }
 
@@ -80,10 +95,17 @@
         onWordAdded();
       }
 
-      setTimeout(step, speedMs);
+      timer = setTimeout(step, speedMs);
     }
 
     step();
+
+    return {
+      cancel() {
+        isCancelled = true;
+        if (timer) clearTimeout(timer);
+      }
+    };
   }
 
   /**
@@ -201,15 +223,12 @@
       <div class="instant-help-header">
         <div class="instant-help-title-group">
           <div class="instant-help-icon-wrap">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 2L9.5 8.5 3 11l6.5 2.5L12 20l2.5-6.5L21 11l-6.5-2.5z"/>
             </svg>
           </div>
           <div>
             <h3 class="instant-help-title" id="instant-help-title">Instant Help</h3>
-            <span class="instant-help-badge ${isExam ? 'badge-exam' : 'badge-practice'}">
-              ${isExam ? 'Exam Mode • Conceptual Hints' : 'Practice Mode • Concept Guide'}
-            </span>
           </div>
         </div>
         <button class="instant-help-close-btn" id="instant-help-x-btn" aria-label="Close instant help" type="button" title="Close Instant Help">
@@ -279,24 +298,26 @@
             maxlength="1000"
             aria-label="Ask a follow-up about this explanation"
           ></textarea>
-          <button
-            id="instant-help-followup-send-btn"
-            class="btn-followup-send"
-            type="button"
-            title="Send follow-up question"
-            aria-label="Send follow-up question"
-          >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="19" x2="12" y2="5"></line>
-              <polyline points="5 12 12 5 19 12"></polyline>
-            </svg>
-          </button>
+          <div id="instant-help-followup-send-slot" class="followup-send-container">
+            <button
+              id="instant-help-followup-send-btn"
+              class="btn-followup-send"
+              type="button"
+              title="Send follow-up question"
+              aria-label="Send follow-up question"
+            >
+              <svg class="followup-arrow-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div class="followup-meta-row">
-          <span class="followup-turn-badge" id="followup-turn-badge">3 follow-ups left</span>
-          <span class="followup-meta-dot">&bull;</span>
           <span class="followup-char-count" id="followup-char-count">0 / 1000</span>
+          <span class="followup-meta-dot">&bull;</span>
+          <span class="followup-turn-badge" id="followup-turn-badge">3 follow-ups left</span>
         </div>
       </div>
     `;
@@ -341,10 +362,38 @@
     const closeXBtn = container.querySelector('#instant-help-x-btn');
 
     // 3. Close & Restore Handler
+    let activeOrbCanvas = null;
+    let sendBtnController = null;
+    let activeFollowUpAbort = null;
+    let activeStreamHandle = null;
+
+    function cleanupActiveOrb() {
+      if (activeOrbCanvas) {
+        if (typeof activeOrbCanvas.destroyOrb === 'function') {
+          activeOrbCanvas.destroyOrb();
+        }
+        activeOrbCanvas = null;
+      }
+    }
+
     function closeModal() {
       isInitialRequestInFlight = false;
       popupSession.isFollowUpInFlight = false;
       document.removeEventListener('keydown', handleKeyDown);
+      cleanupActiveOrb();
+
+      if (sendBtnController && typeof sendBtnController.destroy === 'function') {
+        try { sendBtnController.destroy(); } catch (e) {}
+        sendBtnController = null;
+      }
+      if (activeFollowUpAbort) {
+        try { activeFollowUpAbort.abort(); } catch (e) {}
+        activeFollowUpAbort = null;
+      }
+      if (activeStreamHandle && typeof activeStreamHandle.cancel === 'function') {
+        activeStreamHandle.cancel();
+        activeStreamHandle = null;
+      }
 
       if (mainCol && container.parentNode === mainCol) {
         if (typeof gsap !== 'undefined' && gsap.to) {
@@ -394,15 +443,31 @@
     if (backBtn) backBtn.addEventListener('click', closeModal);
     if (closeXBtn) closeXBtn.addEventListener('click', closeModal);
 
-    // 4. Render Loading State
+    // 4. Render Loading State (Using Thinking Orbs "solving" state)
     function renderLoading() {
+      cleanupActiveOrb();
+
       dynamicBody.innerHTML = `
         <div class="instant-help-loading-state">
-          <div class="instant-help-spinner"></div>
+          <div class="instant-help-orb-wrap" id="instant-help-orb-slot"></div>
           <p class="loading-main-text">Consulting AI Tutor...</p>
           <p class="loading-sub-text">Analyzing the core concept and preparing student guidance</p>
         </div>
       `;
+
+      const orbSlot = dynamicBody.querySelector('#instant-help-orb-slot');
+      if (orbSlot) {
+        if (typeof window.createThinkingOrb === 'function') {
+          activeOrbCanvas = window.createThinkingOrb({
+            state: 'solving',
+            size: 64,
+            speed: 1
+          });
+          orbSlot.appendChild(activeOrbCanvas);
+        } else {
+          orbSlot.innerHTML = '<div class="instant-help-spinner"></div>';
+        }
+      }
     }
 
     // Close helper for passage viewer panel
@@ -450,6 +515,7 @@
 
     // 5. Render Success State with Word-by-Word Streaming Answers & Blur-In Effect
     function renderSuccess(data) {
+      cleanupActiveOrb();
       popupSession.initialData = data;
       popupSession.retrievedPassage = data.passage || null;
       popupSession.sourceReference = data.source || null;
@@ -464,7 +530,7 @@
           <!-- Explanation Section -->
           <div class="instant-help-sec" id="instant-help-exp-sec">
             <div class="instant-help-sec-header">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="16" x2="12" y2="12"></line>
                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -478,7 +544,7 @@
             <!-- Reasoning & Example Section -->
             <div class="instant-help-sec" id="instant-help-reasoning-sec" style="opacity: 0;">
               <div class="instant-help-sec-header">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
                 <span>Reasoning &amp; Example</span>
@@ -592,8 +658,63 @@
       const chatThread = dynamicBody.querySelector('#instant-help-chat-thread');
       const followupInput = container.querySelector('#instant-help-followup-input');
       const followupSendBtn = container.querySelector('#instant-help-followup-send-btn');
+      const followupSendSlot = container.querySelector('#instant-help-followup-send-slot');
       const charCountEl = container.querySelector('#followup-char-count');
       const turnBadgeEl = container.querySelector('#followup-turn-badge');
+
+      function setSendButtonGenerating(isGenerating) {
+        if (sendBtnController && typeof sendBtnController.setGenerating === 'function') {
+          sendBtnController.setGenerating(isGenerating);
+        }
+        const btn = container.querySelector('.btn-followup-send');
+        if (btn) {
+          if (isGenerating) {
+            btn.classList.add('is-generating');
+            btn.title = 'Stop generating';
+            btn.setAttribute('aria-label', 'Stop generating');
+            btn.innerHTML = `
+              <svg class="followup-stop-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <rect x="2.5" y="2.5" width="15" height="15" rx="3.5" />
+              </svg>
+            `;
+          } else {
+            btn.classList.remove('is-generating');
+            btn.title = 'Send follow-up question';
+            btn.setAttribute('aria-label', 'Send follow-up question');
+            btn.innerHTML = `
+              <svg class="followup-arrow-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+              </svg>
+            `;
+          }
+        }
+      }
+
+      function stopFollowUp() {
+        if (!popupSession.isFollowUpInFlight) return;
+        if (activeFollowUpAbort) {
+          try { activeFollowUpAbort.abort(); } catch (e) {}
+          activeFollowUpAbort = null;
+        }
+        if (activeStreamHandle && typeof activeStreamHandle.cancel === 'function') {
+          activeStreamHandle.cancel();
+          activeStreamHandle = null;
+        }
+        popupSession.isFollowUpInFlight = false;
+        setSendButtonGenerating(false);
+        if (followupInput) {
+          followupInput.disabled = false;
+          followupInput.focus();
+        }
+      }
+
+      if (followupSendSlot && typeof window.createFollowUpButton === 'function') {
+        sendBtnController = window.createFollowUpButton(followupSendSlot, {
+          onSend: () => executeFollowUp(),
+          onStop: () => stopFollowUp()
+        });
+      }
 
       if (followupInput && charCountEl) {
         followupInput.addEventListener('input', () => {
@@ -605,13 +726,23 @@
         followupInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            executeFollowUp();
+            if (popupSession.isFollowUpInFlight) {
+              stopFollowUp();
+            } else {
+              executeFollowUp();
+            }
           }
         });
       }
 
       if (followupSendBtn) {
-        followupSendBtn.addEventListener('click', executeFollowUp);
+        followupSendBtn.addEventListener('click', () => {
+          if (popupSession.isFollowUpInFlight) {
+            stopFollowUp();
+          } else {
+            executeFollowUp();
+          }
+        });
       }
 
       // Execute Follow-Up Query
@@ -623,8 +754,9 @@
         if (!text) return;
 
         popupSession.isFollowUpInFlight = true;
+        setSendButtonGenerating(true);
+        activeFollowUpAbort = new AbortController();
         followupInput.disabled = true;
-        if (followupSendBtn) followupSendBtn.disabled = true;
 
         // 1. Append user message to chat thread
         const userMsgEl = document.createElement('div');
@@ -636,18 +768,29 @@
         `;
         chatThread.appendChild(userMsgEl);
 
-        // 2. Append loading indicator bubble
+        // 2. Append loading indicator bubble with mini solving orb
         const loadingBubble = document.createElement('div');
         loadingBubble.className = 'instant-help-chat-turn assistant-turn chat-turn-loading';
         loadingBubble.id = 'chat-turn-loading';
         loadingBubble.innerHTML = `
-          <div class="chat-bubble assistant-bubble">
-            <div class="chat-typing-dots">
-              <span></span><span></span><span></span>
-            </div>
+          <div class="chat-bubble assistant-bubble" style="display: inline-flex; align-items: center; gap: 8px;">
+            <div class="followup-orb-slot"></div>
             <span class="chat-loading-text">Thinking...</span>
           </div>
         `;
+        let followupOrb = null;
+        if (typeof window.createThinkingOrb === 'function') {
+          followupOrb = window.createThinkingOrb({
+            state: 'solving',
+            size: 20,
+            speed: 1
+          });
+          const fuSlot = loadingBubble.querySelector('.followup-orb-slot');
+          if (fuSlot && followupOrb) fuSlot.appendChild(followupOrb);
+        } else {
+          const fuSlot = loadingBubble.querySelector('.followup-orb-slot');
+          if (fuSlot) fuSlot.innerHTML = `<div class="chat-typing-dots"><span></span><span></span><span></span></div>`;
+        }
         chatThread.appendChild(loadingBubble);
         if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
 
@@ -662,9 +805,7 @@
         });
 
         try {
-          const endpoint = (typeof window !== 'undefined' && window.location && (window.location.port === '8000' || window.location.port === '5500' || window.location.port === '3000'))
-            ? 'http://127.0.0.1:8787/api/instant-help'
-            : '/api/instant-help';
+          const endpoint = getInstantHelpEndpoint();
 
           const reqHeaders = { 'Content-Type': 'application/json' };
           if (typeof window !== 'undefined' && window.EcoAuth && typeof window.EcoAuth.getSession === 'function') {
@@ -690,7 +831,8 @@
           const res = await fetch(endpoint, {
             method: 'POST',
             headers: reqHeaders,
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: activeFollowUpAbort ? activeFollowUpAbort.signal : undefined
           });
 
           const rawText = await res.text();
@@ -707,6 +849,10 @@
             throw new Error(resData.error || ('Server returned HTTP status ' + res.status));
           }
 
+          if (followupOrb && followupOrb.destroyOrb) {
+            followupOrb.destroyOrb();
+            followupOrb = null;
+          }
           loadingBubble.remove();
           popupSession.userTurnsCount++;
 
@@ -731,14 +877,24 @@
           const chatReasoningBox = assistantMsgEl.querySelector(`#followup-reasoning-box-${turnNum}`);
           const chatReasoningTarget = assistantMsgEl.querySelector(`#followup-stream-reasoning-${turnNum}`);
 
-          streamWordByWord(chatExpTarget, resData.explanation, () => {
+          activeStreamHandle = streamWordByWord(chatExpTarget, resData.explanation, () => {
             if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
           }, () => {
             if (chatReasoningBox && chatReasoningTarget && resData.reasoning_example) {
               chatReasoningBox.style.opacity = '1';
-              streamWordByWord(chatReasoningTarget, resData.reasoning_example, () => {
+              activeStreamHandle = streamWordByWord(chatReasoningTarget, resData.reasoning_example, () => {
                 if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+              }, () => {
+                // Done all streaming
+                popupSession.isFollowUpInFlight = false;
+                setSendButtonGenerating(false);
+                activeStreamHandle = null;
               });
+            } else {
+              // Done explanation streaming
+              popupSession.isFollowUpInFlight = false;
+              setSendButtonGenerating(false);
+              activeStreamHandle = null;
             }
           });
 
@@ -758,6 +914,9 @@
             followupInput.disabled = true;
             followupInput.placeholder = 'Follow-up limit reached for this question.';
             if (followupSendBtn) followupSendBtn.disabled = true;
+            if (sendBtnController && typeof sendBtnController.setDisabled === 'function') {
+              sendBtnController.setDisabled(true);
+            }
 
             const limitNotice = document.createElement('div');
             limitNotice.className = 'chat-limit-notice';
@@ -773,40 +932,59 @@
           } else {
             followupInput.disabled = false;
             if (followupSendBtn) followupSendBtn.disabled = false;
+            if (sendBtnController && typeof sendBtnController.setDisabled === 'function') {
+              sendBtnController.setDisabled(false);
+            }
             followupInput.focus();
           }
 
           if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
 
         } catch (err) {
-          loadingBubble.remove();
+          popupSession.isFollowUpInFlight = false;
+          setSendButtonGenerating(false);
+          activeStreamHandle = null;
+
+          if (followupOrb && followupOrb.destroyOrb) {
+            followupOrb.destroyOrb();
+            followupOrb = null;
+          }
+          if (loadingBubble && loadingBubble.parentNode) {
+            loadingBubble.remove();
+          }
           popupSession.conversationHistory.pop();
 
-          const errorNotice = document.createElement('div');
-          errorNotice.className = 'chat-turn-error';
-          errorNotice.innerHTML = `
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <span>${escapeHtml(err.message || 'Unable to get an answer. Please try again.')}</span>
-          `;
-          chatThread.appendChild(errorNotice);
+          if (err && err.name !== 'AbortError') {
+            const errorNotice = document.createElement('div');
+            errorNotice.className = 'chat-turn-error';
+            errorNotice.innerHTML = `
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>${escapeHtml(err.message || 'Unable to get an answer. Please try again.')}</span>
+            `;
+            chatThread.appendChild(errorNotice);
+          }
 
           followupInput.value = text;
           followupInput.disabled = false;
           if (followupSendBtn) followupSendBtn.disabled = false;
+          if (sendBtnController && typeof sendBtnController.setDisabled === 'function') {
+            sendBtnController.setDisabled(false);
+          }
           followupInput.focus();
           if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
         } finally {
-          popupSession.isFollowUpInFlight = false;
+          activeFollowUpAbort = null;
         }
       }
     }
 
     // 6. Render Error State with Retry
     function renderError(errorMessage) {
+      cleanupActiveOrb();
       dynamicBody.innerHTML = `
         <div class="instant-help-error-state">
           <div class="error-icon-wrap">
@@ -866,9 +1044,7 @@
           mode
         };
 
-        const endpoint = (typeof window !== 'undefined' && window.location && (window.location.port === '8000' || window.location.port === '5500' || window.location.port === '3000'))
-          ? 'http://127.0.0.1:8787/api/instant-help'
-          : '/api/instant-help';
+        const endpoint = getInstantHelpEndpoint();
 
         const res = await fetch(endpoint, {
           method: 'POST',

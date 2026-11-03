@@ -4,16 +4,23 @@
   "description": "EcoMatrix Dynamic Economics & Graph Simulator on Cloudflare Workers",
   "type": "module",
   "scripts": {
-    "build": "node scripts/sync-assets.js",
+    "build:orbs": "npx esbuild src/thinking-orb-entry.js --bundle --format=iife --outfile=js/thinking-orbs.js",
+    "build:beam": "npx esbuild src/border-beam-entry.jsx --bundle --format=iife --outfile=js/border-beam.js --define:process.env.NODE_ENV=\"\\\"production\\\"\"",
+    "build": "npm run build:orbs && npm run build:beam && node scripts/sync-assets.js",
     "predev": "npm run build",
-    "dev": "wrangler dev",
+    "dev": "node scripts/dev.mjs",
     "predeploy": "npm run build",
     "deploy": "wrangler deploy",
-    "start": "wrangler dev",
+    "start": "node scripts/dev.mjs",
     "tail": "wrangler tail"
   },
   "devDependencies": {
     "wrangler": "^4.156.0"
+  },
+  "dependencies": {
+    "border-beam": "^1.4.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "thinking-orbs": "^0.3.2"
   }
 }
-

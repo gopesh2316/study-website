@@ -3503,34 +3503,29 @@ body::-webkit-scrollbar,
   scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
 }
 
-/* Custom sleek scrollbar for main test column */
+/* Hidden invisible scrollbar for main test column (keeps scrolling functional) */
+.live-test-main-col {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
 .live-test-main-col::-webkit-scrollbar {
-  width: 6px;
-}
-
-.live-test-main-col::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.live-test-main-col::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
-  border-radius: 9999px;
-}
-
-.live-test-main-col::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.55);
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 .live-test-theme-dark .live-test-main-col {
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
-.live-test-theme-dark .live-test-main-col::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.live-test-theme-dark .live-test-main-col::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
+.live-test-theme-dark .live-test-main-col::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 .live-q-meta-row {
@@ -3813,39 +3808,27 @@ body::-webkit-scrollbar,
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: #334155 transparent;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .live-test-sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.live-test-sidebar::-webkit-scrollbar-track {
-  background: transparent;
-  margin: 10px 0;
-}
-
-.live-test-sidebar::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 8px;
-}
-
-.live-test-sidebar::-webkit-scrollbar-thumb:hover {
-  background: #1e293b;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 .live-test-theme-dark .live-test-sidebar {
-  scrollbar-color: #475569 transparent;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
-.live-test-theme-dark .live-test-sidebar::-webkit-scrollbar-thumb {
-  background: #475569;
-}
-
-.live-test-theme-dark .live-test-sidebar::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+.live-test-theme-dark .live-test-sidebar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 .palette-summary-box {
@@ -5831,24 +5814,16 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   position: relative !important;
 }
 
+.instant-help-content-scroll {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
 .instant-help-content-scroll::-webkit-scrollbar {
-  display: block !important;
-  width: 6px !important;
-}
-
-.instant-help-content-scroll::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-radius: 9999px !important;
-  margin: 6px 0 !important;
-}
-
-.instant-help-content-scroll::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.28) !important;
-  border-radius: 9999px !important;
-}
-
-.instant-help-content-scroll::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.5) !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 .instant-help-title-group {
@@ -5953,11 +5928,21 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .q-meta-pill {
-  background: #333333;
-  color: #ffffff;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
   font-weight: 600;
-  padding: 1px 6px;
+  padding: 2px 7px;
   border-radius: 40px;
+  font-size: 0.72rem;
+  transition: all 0.15s ease;
+}
+
+.live-test-theme-dark .q-meta-pill,
+.live-test-theme-dark .instant-help-inline .q-meta-pill {
+  background: #282828 !important;
+  color: #e2e8f0 !important;
+  border-color: #3f3f46 !important;
 }
 
 .q-meta-subject {
@@ -6005,18 +5990,21 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 40px;
-  background: rgba(255, 255, 255, 0.08);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
   font-weight: 700;
   font-size: 0.74rem;
-  color: #ffffff;
+  color: #334155;
   flex-shrink: 0;
+  transition: all 0.15s ease;
 }
 
 .instant-help-q-opt-item.opt-selected .opt-letter {
   background: #2563eb;
+  border-color: #2563eb;
   color: #ffffff;
 }
 
@@ -6028,6 +6016,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 
 .instant-help-q-opt-item.opt-correct .opt-letter {
   background: #16a34a;
+  border-color: #16a34a;
   color: #ffffff;
 }
 
@@ -6091,10 +6080,36 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   box-sizing: border-box;
 }
 
-/* Loading State */
+/* Loading State with Thinking Orbs */
 .instant-help-loading-state {
-  text-align: center;
-  padding: 1.8rem 1rem;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 3rem 1.5rem !important;
+  min-height: 220px;
+}
+
+.instant-help-orb-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.25rem auto;
+}
+
+.instant-help-orb-wrap canvas {
+  display: block;
+}
+
+.followup-orb-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
 }
 
 .instant-help-spinner {
@@ -6108,16 +6123,26 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .loading-main-text {
-  font-size: 0.92rem;
+  font-size: 0.96rem;
   font-weight: 600;
-  color: #ffffff;
-  margin: 0 0 0.25rem 0;
+  color: #0f172a;
+  margin: 0 0 0.35rem 0;
 }
 
 .loading-sub-text {
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.8rem;
+  color: #64748b;
   margin: 0;
+  max-width: 320px;
+  line-height: 1.45;
+}
+
+.live-test-theme-dark .loading-main-text {
+  color: #f8fafc !important;
+}
+
+.live-test-theme-dark .loading-sub-text {
+  color: white !important;
 }
 
 /* Result Content */
@@ -6221,7 +6246,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   color: #ffffff;
   border: none;
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: 60px;
   font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
@@ -6229,6 +6254,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   align-items: center;
   gap: 0.4rem;
   transition: background-color 0.15s;
+  border: 1px solid #ff5f5f;
 }
 
 .btn-help-retry:hover {
@@ -6238,9 +6264,9 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 .btn-help-dismiss {
   background: #262626;
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(112 112 112 / 10%);
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: 60px;
   font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
@@ -6334,19 +6360,27 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   gap: 0.4rem;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #10b981;
+  color: #0f172a;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  background: transparent;
+  transition: color 0.15s ease;
+}
+
+.live-test-theme-dark .source-card-badge,
+.live-test-theme-dark .instant-help-inline .source-card-badge {
+  color: #f8fafc !important;
+  background: transparent !important;
 }
 
 .btn-read-passage {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: rgba(16, 185, 129, 0.12);
-  border: 0px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
-  padding: 0.3rem 0.55rem;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  padding: 0.3rem 0.65rem;
   border-radius: 50px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -6355,14 +6389,34 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .btn-read-passage:hover {
-  background: rgba(16, 185, 129, 0.22);
-  border-color: rgba(16, 185, 129, 0.5);
-  color: #6ee7b7;
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 .btn-read-passage:focus-visible {
-  outline: 2px solid #10b981;
+  outline: 2px solid #2563eb;
   outline-offset: 1px;
+}
+
+.live-test-theme-dark .btn-read-passage,
+.live-test-theme-dark .instant-help-inline .btn-read-passage {
+  background: #262626 !important;
+  border: 1px solid #262626 !important;
+  color: #e2e8f0 !important;
+}
+
+.live-test-theme-dark .btn-read-passage:hover,
+.live-test-theme-dark .instant-help-inline .btn-read-passage:hover {
+  background: #333333 !important;
+  border-color: #52525b !important;
+  color: #ffffff !important;
+}
+
+.live-test-theme-dark .btn-read-passage:focus-visible,
+.live-test-theme-dark .instant-help-inline .btn-read-passage:focus-visible {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 1px !important;
 }
 
 .source-card-body {
@@ -6399,14 +6453,24 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 
 .source-details-filename {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  color: #93c5fd;
-  background: rgba(59, 130, 246, 0.1);
-  padding: 1px 5px;
-  border-radius: 3px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #eff6ff;
+  padding: 1px 6px;
+  border-radius: 39px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: all 0.15s ease;
+  font-size: 12px;
+}
+
+.live-test-theme-dark .source-details-filename,
+.live-test-theme-dark .instant-help-inline .source-details-filename {
+  color: #93c5fd !important;
+  background: rgba(59, 130, 246, 0.18) !important;
+  border-color: rgb(32 44 65) !important;
 }
 
 /* Expandable Passage Viewer Panel */
@@ -6740,23 +6804,10 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 .followup-meta-row {
   display: flex;
   justify-content: space-between;
-  justify-content: center;
   align-items: center;
   margin-top: 0.4rem;
   font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.4);
-  gap: 8px;
-  margin-top: 0.5rem;
-  font-size: 0.72rem;
-  color: #64748b;
-  text-align: center;
-}
-
-.followup-meta-dot {
-  font-size: 0.85rem;
-  line-height: 1;
-  color: #94a3b8;
-  user-select: none;
 }
 
 .chat-turn-error {
@@ -7091,7 +7142,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .live-test-theme-dark .leave-confirm-desc {
-  color: #a1a1aa;
+  color: white;
 }
 
 .live-test-theme-dark .btn-leave-cancel {
@@ -7109,7 +7160,10 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
    IN-PLACE INSTANT HELP IN LIVE TEST MAIN COLUMN
    ============================================================ */
 .live-test-main-col.in-instant-help {
-  padding: 0 !important;
+  padding-left: 36px !important;
+  padding-right: 36px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
@@ -7134,11 +7188,11 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  background-color: #ffffff;
+  background-color: transparent !important;
   color: #0f172a;
   animation: none;
   margin: 0;
-  padding: 0;
+  padding: 0 !important;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -7196,10 +7250,6 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   right: 0 !important;
   z-index: 50 !important;
   margin-top: auto !important;
-  background: rgba(255, 255, 255, 0.96) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid #e2e8f0 !important;
   background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -7209,8 +7259,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   border-right: none !important;
   border-bottom: none !important;
   border-radius: 0 !important;
-  padding: 12px 24px 16px 24px !important;
-  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.05) !important;
+  padding: 10px 0 16px 0 !important;
   box-shadow: none !important;
 }
 
@@ -7220,18 +7269,15 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   color: #0f172a;
 }
 
-.instant-help-inline .instant-help-followup-dock .followup-turn-badge,
-.instant-help-inline .instant-help-followup-dock .followup-char-count,
-.instant-help-inline .instant-help-followup-dock .followup-meta-dot {
-  color: #64748b;
-  font-size: 0.72rem;
-}
-
 /* Light Theme Styling for Instant Help Content */
 .instant-help-inline .instant-help-header {
-  background-color: #ffffff;
+  background-color: transparent !important;
   border-bottom: 1px solid #f1f5f9;
-  padding: 18px 24px 14px 24px;
+  padding: 24px 36px 16px 36px !important;
+  margin-left: -36px !important;
+  margin-right: -36px !important;
+  width: calc(100% + 72px) !important;
+  box-sizing: border-box !important;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -7255,13 +7301,13 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .instant-help-inline .instant-help-content-scroll {
-  padding: 18px 24px;
-  background-color: #ffffff;
+  padding: 18px 0 !important;
+  background-color: transparent !important;
 }
 
 .instant-help-inline .instant-help-q-box {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #f4f4f6;
+  border: 1px solid #f4f4f6;
   color: #0f172a;
 }
 
@@ -7274,9 +7320,15 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .instant-help-inline .instant-help-q-opt-item {
-  background: #ffffff;
+  background: #ffffff00;
   border: 0px solid #e2e8f0;
   color: #334155;
+}
+
+.instant-help-inline .opt-letter {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
 }
 
 .instant-help-inline .instant-help-q-opt-item.opt-selected {
@@ -7285,25 +7337,33 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   color: #1d4ed8;
 }
 
+.instant-help-inline .instant-help-q-opt-item.opt-selected .opt-letter {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
 .instant-help-inline .instant-help-q-opt-item.opt-correct {
-  background: rgba(34, 197, 94, 0.1) !important;
+  background: #dfffeb00;
   border-color: #22c55e !important;
   color: #15803d !important;
 }
 
 .instant-help-inline .instant-help-q-opt-item.opt-correct .opt-letter {
   background: #16a34a !important;
+  border-color: #16a34a !important;
   color: #ffffff !important;
 }
 
 .instant-help-inline .instant-help-q-opt-item.opt-selected:not(.opt-correct) {
-  background: rgba(239, 68, 68, 0.08) !important;
+  background: rgba(239, 68, 68, 0.00) !important;
   border-color: #ef4444 !important;
   color: #b91c1c !important;
 }
 
 .instant-help-inline .instant-help-q-opt-item.opt-selected:not(.opt-correct) .opt-letter {
   background: #ef4444 !important;
+  border-color: #ef4444 !important;
   color: #ffffff !important;
 }
 
@@ -7320,24 +7380,29 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   justify-content: center !important;
 }
 
-.instant-help-inline .instant-help-sec,
-.instant-help-inline .instant-help-source-card,
-.instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
-
-.instant-help-inline .source-card-badge {
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
+.instant-help-inline .instant-help-sec {
+  background: #f8fafc00;
+  border: 0px solid #e2e8f0;
 }
 
 .instant-help-inline .instant-help-sec-header {
   color: #0f172a;
+}
+
+.instant-help-inline .instant-help-sec-text {
+  color: #334155;
+  font-size: 1rem !important;
+  font-weight: 100 !important;
+}
+
+.instant-help-inline .instant-help-source-card {
+  background: #ffffff;
+  border: 0px solid #e2e8f0;
+}
+
+.instant-help-inline .source-card-badge {
+  background: #ffffff00;
+  border: 0px solid #e2e8f0;
 }
 
 .instant-help-inline .source-card-title {
@@ -7363,8 +7428,11 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
   color: #0f172a;
 }
 
@@ -7390,14 +7458,20 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
    DARK THEME OVERRIDES FOR INLINE INSTANT HELP
    ============================================================ */
 .live-test-theme-dark .instant-help-dialog.instant-help-inline {
-  background-color: #1A1A1A !important;
+  background-color: transparent !important;
   color: #f1f5f9 !important;
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-header {
-  background-color: #1A1A1A !important;
+  background-color: transparent !important;
   border-bottom: 1px solid #2a2a2a !important;
   align-items: center !important;
+  padding-left: 36px !important;
+  padding-right: 36px !important;
+  margin-left: -36px !important;
+  margin-right: -36px !important;
+  width: calc(100% + 72px) !important;
+  box-sizing: border-box !important;
 }
 
 .live-test-theme-dark .btn-instant-help-back {
@@ -7429,7 +7503,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-content-scroll {
-  background-color: #1A1A1A !important;
+  background-color: transparent !important;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent !important;
 }
 
@@ -7453,10 +7527,23 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   color: #e2e8f0 !important;
 }
 
+.live-test-theme-dark .opt-letter,
+.live-test-theme-dark .instant-help-inline .opt-letter {
+  background: #262626 !important;
+  border: 1px solid #3f3f46 !important;
+  color: #cbd5e1 !important;
+}
+
 .live-test-theme-dark .instant-help-inline .instant-help-q-opt-item.opt-selected {
   background: rgba(37, 99, 235, 0.22) !important;
   border-color: #3b82f6 !important;
   color: #93c5fd !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-q-opt-item.opt-selected .opt-letter {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: #ffffff !important;
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-q-opt-item.opt-correct {
@@ -7467,6 +7554,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 
 .live-test-theme-dark .instant-help-inline .instant-help-q-opt-item.opt-correct .opt-letter {
   background: #22c55e !important;
+  border-color: #22c55e !important;
   color: #052e16 !important;
 }
 
@@ -7478,6 +7566,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 
 .live-test-theme-dark .instant-help-inline .instant-help-q-opt-item.opt-selected:not(.opt-correct) .opt-letter {
   background: #ef4444 !important;
+  border-color: #ef4444 !important;
   color: #ffffff !important;
 }
 
@@ -7487,8 +7576,9 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-sec {
-  background: #222222 !important;
-  border-color: #333333 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-sec-header {
@@ -7500,8 +7590,9 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-source-card {
-  background: #222222 !important;
-  border-color: #333333 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .live-test-theme-dark .instant-help-inline .source-card-title {
@@ -7527,8 +7618,11 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
-  background: #222222 !important;
-  border-color: #333333 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
   color: #f8fafc !important;
 }
 
@@ -7557,11 +7651,12 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  padding: 10px 0 16px 0 !important;
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea {
-  background: #222222 !important;
-  border-color: #383838 !important;
+  background: #242424 !important;
+  border: 1.5px solid #383838 !important;
   color: #f8fafc !important;
 }
 
@@ -7570,117 +7665,312 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-char-count,
-.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-shortcut-hint,
-.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-turn-badge {
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-turn-badge,
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-meta-dot {
+  color: #94a3b8 !important;
+}
 
-  .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-turn-badge,
-  .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-meta-dot {
-    color: #94a3b8 !important;
-  }
-
-  /* ============================================================
+/* ============================================================
    FOLLOWUP INPUT PILL, BUBBLE RADIUS & TRANSPARENCY CUSTOMIZATIONS
    ============================================================ */
 
-  /* Hide chat-sender-tag completely */
-  .chat-sender-tag {
-    display: none !important;
-  }
+/* Hide unwanted elements */
+.chat-sender-tag,
+.followup-dock-header,
+.followup-shortcut-hint,
+.instant-help-badge {
+  display: none !important;
+}
 
-  /* User chat bubble: 50px pill with bottom-right tail preserved */
-  .instant-help-chat-turn.user-turn .chat-bubble,
-  .instant-help-inline .instant-help-chat-turn.user-turn .chat-bubble {
-    border-radius: 50px 50px 4px 50px !important;
-    padding: 10px 20px !important;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25) !important;
-  }
+/* User chat bubble: 50px pill with bottom-right tail preserved */
+.instant-help-chat-turn.user-turn .chat-bubble,
+.instant-help-inline .instant-help-chat-turn.user-turn .chat-bubble {
+  border-radius: 50px 50px 4px 50px !important;
+  padding: 10px 20px !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25) !important;
+}
 
-  /* Follow-up input row: relative container with pill textarea */
-  .followup-input-row,
-  .instant-help-inline .followup-input-row {
-    position: relative !important;
-    display: flex !important;
-    align-items: center !important;
-    width: 100% !important;
-    gap: 0 !important;
-  }
+/* Follow-up input row: minimal pill searchbar */
+.followup-input-row,
+.instant-help-inline .followup-input-row {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  gap: 0 !important;
+}
 
-  .followup-textarea,
-  .instant-help-inline .followup-textarea,
-  .instant-help-inline .instant-help-followup-dock .followup-textarea,
-  .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea {
-    width: 100% !important;
-    border-radius: 100px !important;
-    border: 0px !important;
-    border: none !important;
-    outline: none !important;
-    padding: 12px 52px 12px 22px !important;
-    line-height: 1.4 !important;
-    min-height: 46px !important;
-    max-height: 120px !important;
-    box-sizing: border-box !important;
-    box-shadow: none !important;
-  }
+.followup-textarea,
+.instant-help-inline .followup-textarea,
+.instant-help-inline .instant-help-followup-dock .followup-textarea {
+  width: 100% !important;
+  border-radius: 100px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  outline: none !important;
+  padding: 12px 52px 12px 22px !important;
+  line-height: 1.4 !important;
+  min-height: 46px !important;
+  max-height: 120px !important;
+  box-sizing: border-box !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
 
-  /* Send button placed cleanly inside the right of the input */
-  .btn-followup-send,
-  .instant-help-inline .btn-followup-send {
-    position: absolute !important;
-    right: 7px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 34px !important;
-    height: 34px !important;
-    min-width: 34px !important;
-    min-height: 34px !important;
-    border-radius: 50% !important;
-    padding: 0 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: #2563eb !important;
-    color: #ffffff !important;
-    border: none !important;
-    cursor: pointer !important;
-    transition: all 0.16s ease !important;
-    z-index: 10 !important;
-  }
+.followup-textarea:focus,
+.instant-help-inline .followup-textarea:focus {
+  border-color: #3b82f6 !important;
+}
 
-  .btn-followup-send:hover,
-  .instant-help-inline .btn-followup-send:hover {
-    background: #1d4ed8 !important;
-    transform: translateY(-50%) scale(1.06) !important;
-  }
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea {
+  background: #242424 !important;
+  border: 1.5px solid #383838 !important;
+  color: #f8fafc !important;
+}
 
-  .btn-followup-send:disabled,
-  .instant-help-inline .btn-followup-send:disabled {
-    opacity: 0.45 !important;
-    cursor: not-allowed !important;
-    transform: translateY(-50%) !important;
-  }
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea:focus {
+  border-color: #3b82f6 !important;
+}
 
-  .btn-followup-send span,
-  .instant-help-inline .btn-followup-send span {
-    display: none !important;
-  }
+/* Centered meta row below searchbar with char count, dot, and limit */
+.followup-meta-row {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 0.5rem !important;
+  font-size: 0.72rem !important;
+  color: #64748b !important;
+  text-align: center !important;
+}
 
-  .btn-followup-send svg,
-  .instant-help-inline .btn-followup-send svg {
-    width: 17px !important;
-    height: 17px !important;
-    stroke: currentColor !important;
-  }
+.followup-meta-dot {
+  font-size: 0.85rem !important;
+  line-height: 1 !important;
+  color: #94a3b8 !important;
+  user-select: none !important;
+}
 
-  /* Dark theme transparent backgrounds & border none for explanation, source card, and assistant bubble */
-  .live-test-theme-dark .instant-help-inline .instant-help-sec,
-  .live-test-theme-dark .instant-help-inline .instant-help-source-card,
-  .live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
+/* Follow-up Send Button Container & Border Beam */
+.followup-send-container,
+.instant-help-inline .followup-send-container {
+  position: absolute !important;
+  right: 7px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10 !important;
+  box-sizing: border-box !important;
+}
 
-  .live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
+.btn-followup-beam-container,
+.instant-help-inline .btn-followup-beam-container {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  border-radius: 17px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure BorderBeam inside is NOT light (disable inner glow/shadow tint) */
+.btn-followup-beam-container[data-beam]::before,
+.instant-help-inline .btn-followup-beam-container[data-beam]::before {
+  display: none !important;
+  opacity: 0 !important;
+  background: transparent !important;
+}
+
+/* Ensure BorderBeam stroke and bloom sit above button rim but below stop icon */
+.btn-followup-beam-container[data-beam]::after,
+.instant-help-inline .btn-followup-beam-container[data-beam]::after {
+  z-index: 2 !important;
+  pointer-events: none !important;
+}
+
+.btn-followup-beam-container[data-beam] [data-beam-bloom],
+.instant-help-inline .btn-followup-beam-container[data-beam] [data-beam-bloom] {
+  z-index: 3 !important;
+  pointer-events: none !important;
+}
+
+.btn-followup-send,
+.instant-help-inline .btn-followup-send {
+  position: relative !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.16s ease !important;
+  z-index: 1 !important;
+  outline: none !important;
+}
+
+.btn-followup-send:hover,
+.instant-help-inline .btn-followup-send:hover {
+  background: #1d4ed8 !important;
+  transform: scale(1.05) !important;
+}
+
+/* Generating state: deep dark circular button (inside is not light) */
+.btn-followup-send.is-generating,
+.instant-help-inline .btn-followup-send.is-generating {
+  background: #151518 !important;
+  color: #f8fafc !important;
+  transform: none !important;
+  cursor: pointer !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
+  z-index: 1 !important;
+}
+
+.btn-followup-send.is-generating:hover,
+.instant-help-inline .btn-followup-send.is-generating:hover {
+  background: #1f1f23 !important;
+  color: #ffffff !important;
+  transform: scale(1.04) !important;
+}
+
+.live-test-theme-dark .btn-followup-send {
+  background: #27272a !important;
+  color: #f8fafc !important;
+}
+
+.live-test-theme-dark .btn-followup-send:hover {
+  background: #3f3f46 !important;
+  color: #ffffff !important;
+}
+
+.live-test-theme-dark .btn-followup-send.is-generating {
+  background: #151518 !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.live-test-theme-dark .btn-followup-send.is-generating:hover {
+  background: #1f1f23 !important;
+}
+
+.btn-followup-send:disabled:not(.is-generating),
+.instant-help-inline .btn-followup-send:disabled:not(.is-generating) {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.btn-followup-send span,
+.instant-help-inline .btn-followup-send span {
+  display: none !important;
+}
+
+.btn-followup-send .followup-arrow-icon,
+.instant-help-inline .btn-followup-send .followup-arrow-icon,
+.btn-followup-send svg,
+.instant-help-inline .btn-followup-send svg {
+  width: 17px !important;
+  height: 17px !important;
+  stroke: currentColor !important;
+}
+
+/* Stop icon: big 20px width & height, high z-index */
+.btn-followup-send .followup-stop-icon,
+.instant-help-inline .btn-followup-send .followup-stop-icon {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  fill: currentColor !important;
+  stroke: none !important;
+  position: relative !important;
+  z-index: 4 !important;
+}
+
+/* Dark theme transparent backgrounds & border none for explanation, source card, and assistant bubble */
+.live-test-theme-dark .instant-help-inline .instant-help-sec,
+.live-test-theme-dark .instant-help-inline .instant-help-source-card,
+.live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.live-test-theme-dark .instant-help-inline .instant-help-chat-turn.assistant-turn .chat-bubble {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* ============================================================
+   BLACK & WHITE THEME-COMPATIBLE ICONS
+   Conceptual Explanation, Reasoning & Example, FROM YOUR STUDY MATERIAL,
+   and .instant-help-title-group icon
+   ============================================================ */
+.instant-help-title-group .instant-help-icon-wrap svg,
+.instant-help-inline .instant-help-title-group .instant-help-icon-wrap svg,
+.instant-help-sec-header svg,
+.instant-help-inline .instant-help-sec-header svg,
+.source-card-badge svg,
+.instant-help-inline .source-card-badge svg {
+  stroke: #000000 !important;
+  color: #000000 !important;
+}
+
+.live-test-theme-dark .instant-help-title-group .instant-help-icon-wrap svg,
+.live-test-theme-dark .instant-help-inline .instant-help-title-group .instant-help-icon-wrap svg,
+.live-test-theme-dark .instant-help-sec-header svg,
+.live-test-theme-dark .instant-help-inline .instant-help-sec-header svg,
+.live-test-theme-dark .source-card-badge svg,
+.live-test-theme-dark .instant-help-inline .source-card-badge svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* ============================================================
+   HIDE SCROLLBARS IN LIVE TEST PORTAL (KEEPING SCROLL FUNCTIONAL)
+   ============================================================ */
+.test-session-container,
+.test-session-container *,
+.live-test-wrapper,
+.live-test-wrapper *,
+.live-test-body,
+.live-test-main-col,
+.live-test-sidebar,
+.instant-help-content-scroll,
+.passage-panel-content {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.test-session-container::-webkit-scrollbar,
+.test-session-container *::-webkit-scrollbar,
+.live-test-wrapper::-webkit-scrollbar,
+.live-test-wrapper *::-webkit-scrollbar,
+.live-test-body::-webkit-scrollbar,
+.live-test-main-col::-webkit-scrollbar,
+.live-test-sidebar::-webkit-scrollbar,
+.instant-help-content-scroll::-webkit-scrollbar,
+.passage-panel-content::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}

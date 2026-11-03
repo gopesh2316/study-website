@@ -237,30 +237,7 @@ async function readBoundedBody(request, maxBytes = MAX_PAYLOAD_BYTES) {
 
   try {
     let text = '';
-    if (typeof request.body.getReader === 'function') {
-      const reader = request.body.getReader();
-      const chunks = [];
-      let totalBytes = 0;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        totalBytes += value.byteLength;
-        if (totalBytes > maxBytes) {
-          await reader.cancel();
-          return { ok: false, status: 413, error: 'Request payload too large. Maximum allowed size is 32KB.' };
-        }
-        chunks.push(value);
-      }
-
-      const all = new Uint8Array(totalBytes);
-      let offset = 0;
-      for (const c of chunks) {
-        all.set(c, offset);
-        offset += c.byteLength;
-      }
-      text = new TextDecoder('utf-8').decode(all);
-    } else if (typeof request.text === 'function') {
+    if (typeof request.text === 'function') {
       text = await request.text();
       const bytes = new TextEncoder().encode(text).length;
       if (bytes > maxBytes) {
@@ -693,14 +670,25 @@ async function handleInstantHelp(request, env) {
   let retrievedChapter = null;
   let retrievedFile = null;
 
-  if (!retrievedPassage && env.AI_SEARCH) {
-    const searchMatch = await retrieveStudyPassage(env, { subject, chapter, question });
-    if (searchMatch && searchMatch.passage) {
-      retrievedPassage = searchMatch.passage;
-      retrievedSource = searchMatch.sourceReference;
-      retrievedTitle = searchMatch.title || null;
-      retrievedChapter = searchMatch.chapter || null;
-      retrievedFile = searchMatch.filename || null;
+  const reqUrl = new URL(request.url);
+  const reqHost = request.headers.get('host') || reqUrl.host || '';
+  const isLocalDev = reqHost.includes('127.0.0.1') || reqHost.includes('localhost') || reqUrl.port === '8787' || reqUrl.hostname === '127.0.0.1' || reqUrl.hostname === 'localhost';
+
+  if (!retrievedPassage && env.AI_SEARCH && !isLocalDev) {
+    try {
+      const searchMatch = await Promise.race([
+        retrieveStudyPassage(env, { subject, chapter, question }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('AI Search timeout')), 2500))
+      ]);
+      if (searchMatch && searchMatch.passage) {
+        retrievedPassage = searchMatch.passage;
+        retrievedSource = searchMatch.sourceReference;
+        retrievedTitle = searchMatch.title || null;
+        retrievedChapter = searchMatch.chapter || null;
+        retrievedFile = searchMatch.filename || null;
+      }
+    } catch (searchErr) {
+      console.warn('AI Search retrieval skipped or timed out:', searchErr?.message || searchErr);
     }
   }
 
@@ -757,13 +745,17 @@ async function handleInstantHelp(request, env) {
 
   // 8. Invoke Gemini API
   try {
-    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.8-flash'];
+    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.8-flash', 'gemini-3.5-flash'];
     let geminiRes = null;
     let geminiData = null;
 
+    const geminiBaseUrl = isLocalDev
+      ? 'http://127.0.0.1:8789'
+      : 'https://generativelanguage.googleapis.com';
+
     for (const model of candidateModels) {
       try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
+        const geminiUrl = `${geminiBaseUrl}/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
         const res = await fetch(geminiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -778,16 +770,19 @@ async function handleInstantHelp(request, env) {
               maxOutputTokens: 800,
               responseMimeType: 'application/json'
             }
-          }),
-          signal: AbortSignal.timeout(12000)
+          })
         });
 
         if (res.ok) {
           geminiRes = res;
           geminiData = await res.json();
           break;
+        } else {
+          const errText = await res.text();
+          console.error(`Gemini model ${model} failed HTTP ${res.status}:`, errText);
         }
-      } catch {
+      } catch (geminiErr) {
+        console.error(`Gemini fetch error for model ${model}:`, geminiErr);
         // Fallback to next model
       }
     }
