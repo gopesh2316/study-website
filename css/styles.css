@@ -7787,8 +7787,9 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   border-color: #3b82f6 !important;
 }
 
-/* Centered meta row below searchbar with char count, dot, and limit */
-.followup-meta-row {
+/* Centered meta row below searchbar with char count, dot, and limit (Light & Dark Theme Compatible) */
+.followup-meta-row,
+.instant-help-inline .followup-meta-row {
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
@@ -7797,13 +7798,42 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   font-size: 0.72rem !important;
   color: #64748b !important;
   text-align: center !important;
+  user-select: none !important;
 }
 
-.followup-meta-dot {
+.followup-meta-row .followup-char-count,
+.followup-meta-row .followup-turn-badge,
+.instant-help-inline .followup-char-count,
+.instant-help-inline .followup-turn-badge {
+  color: #64748b !important;
+  font-size: 0.72rem !important;
+  line-height: 1 !important;
+}
+
+.followup-meta-dot,
+.instant-help-inline .followup-meta-dot {
   font-size: 0.85rem !important;
   line-height: 1 !important;
   color: #94a3b8 !important;
   user-select: none !important;
+}
+
+/* Dark Theme Compatibility for .followup-meta-row */
+.live-test-theme-dark .followup-meta-row,
+.live-test-theme-dark .instant-help-inline .followup-meta-row,
+.live-test-theme-dark .instant-help-followup-dock .followup-meta-row,
+[data-theme="dark"] .followup-meta-row {
+  color: #94a3b8 !important;
+}
+
+.live-test-theme-dark .followup-meta-row .followup-char-count,
+.live-test-theme-dark .followup-meta-row .followup-turn-badge,
+.live-test-theme-dark .followup-meta-row .followup-meta-dot,
+.live-test-theme-dark .instant-help-inline .followup-char-count,
+.live-test-theme-dark .instant-help-inline .followup-turn-badge,
+.live-test-theme-dark .instant-help-inline .followup-meta-dot,
+[data-theme="dark"] .followup-meta-row span {
+  color: #94a3b8 !important;
 }
 
 /* Follow-up Send Button Container & Border Beam */
