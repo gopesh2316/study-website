@@ -7330,7 +7330,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 .instant-help-inline .instant-help-header {
   background-color: transparent !important;
   border-bottom: 1px solid #e2e8f0 !important;
-  padding: 24px 36px 16px 36px !important;
+  padding: 24px 24px 16px 28px !important;
   margin: 0 !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -7739,7 +7739,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 .instant-help-inline .instant-help-chat-turn.user-turn .chat-bubble {
   border-radius: 50px 50px 4px 50px !important;
   padding: 10px 20px !important;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.0) !important;
 }
 
 /* Follow-up input row: minimal pill searchbar */
@@ -7757,7 +7757,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 .instant-help-inline .instant-help-followup-dock .followup-textarea {
   width: 100% !important;
   border-radius: 100px !important;
-  border: 1.5px solid #f1f5f9 !important;
+  border: 1.5px solid #f4f4f6 !important;
   outline: none !important;
   padding: 10.5px 52px 10.5px 20px !important;
   line-height: 22px !important;
@@ -7767,7 +7767,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   min-height: 50px !important;
   max-height: 120px !important;
   box-sizing: border-box !important;
-  background: #f1f5f9 !important;
+  background: #f4f4f6 !important;
   color: #0f172a !important;
   resize: none !important;
   overflow-y: auto !important;
@@ -7934,23 +7934,29 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   transform: scale(1.05) !important;
 }
 
-/* Generating state: deep dark circular button (inside is not light) */
+/* Generating state: Light Theme (white circular button, dark/black stop icon) */
 .btn-followup-send.is-generating,
 .instant-help-inline .btn-followup-send.is-generating {
-  background: #151518 !important;
-  color: #f8fafc !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
   transform: none !important;
   cursor: pointer !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
   z-index: 1 !important;
 }
 
 .btn-followup-send.is-generating:hover,
 .instant-help-inline .btn-followup-send.is-generating:hover {
-  background: #1f1f23 !important;
-  color: #ffffff !important;
+  background: #f1f5f9 !important;
+  color: #000000 !important;
   transform: scale(1.04) !important;
+}
+
+.btn-followup-send.is-generating .followup-stop-icon,
+.instant-help-inline .btn-followup-send.is-generating .followup-stop-icon {
+  fill: #0f172a !important;
+  color: #0f172a !important;
 }
 
 .live-test-theme-dark .btn-followup-send {
@@ -7963,14 +7969,28 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   color: #ffffff !important;
 }
 
-.live-test-theme-dark .btn-followup-send.is-generating {
+/* Generating state: Dark Theme (deep dark circular button, bright white stop icon) */
+.live-test-theme-dark .btn-followup-send.is-generating,
+.live-test-theme-dark .instant-help-inline .btn-followup-send.is-generating,
+[data-theme="dark"] .btn-followup-send.is-generating {
   background: #151518 !important;
   color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
 }
 
-.live-test-theme-dark .btn-followup-send.is-generating:hover {
+.live-test-theme-dark .btn-followup-send.is-generating:hover,
+.live-test-theme-dark .instant-help-inline .btn-followup-send.is-generating:hover,
+[data-theme="dark"] .btn-followup-send.is-generating:hover {
   background: #1f1f23 !important;
+  color: #ffffff !important;
+}
+
+.live-test-theme-dark .btn-followup-send.is-generating .followup-stop-icon,
+.live-test-theme-dark .instant-help-inline .btn-followup-send.is-generating .followup-stop-icon,
+[data-theme="dark"] .btn-followup-send.is-generating .followup-stop-icon {
+  fill: #ffffff !important;
+  color: #ffffff !important;
 }
 
 .btn-followup-send:disabled:not(.is-generating),

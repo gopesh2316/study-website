@@ -15,11 +15,13 @@ import { BorderBeam } from 'border-beam';
 export function FollowUpSendButton({
   isGenerating = false,
   disabled = false,
-  theme = 'dark',
+  theme = null,
   onSend,
   onStop,
   title = 'Send follow-up question'
 }) {
+  const currentTheme = theme || resolveThemeFromDom();
+
   const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -35,11 +37,11 @@ export function FollowUpSendButton({
       size="sm"
       colorVariant="colorful"
       strength={1}
-      brightness={1.8}
+      brightness={currentTheme === 'dark' ? 1.8 : 1.3}
       saturation={1.4}
       active={isGenerating}
       borderRadius={17}
-      theme="dark"
+      theme={currentTheme}
       className="btn-followup-beam-container"
     >
       <button
@@ -81,6 +83,25 @@ export function FollowUpSendButton({
   );
 }
 
+function resolveThemeFromDom(el) {
+  if (el && typeof el.closest === 'function') {
+    if (el.closest('.live-test-theme-dark, .dark, [data-theme="dark"]')) return 'dark';
+    if (el.closest('.live-test-wrapper:not(.live-test-theme-dark), .test-session-container:not(.live-test-theme-dark)')) return 'light';
+  }
+  const activeTest = document.querySelector('.test-session-container:not(.hidden)');
+  if (activeTest) {
+    return activeTest.classList.contains('live-test-theme-dark') ? 'dark' : 'light';
+  }
+  const modal = document.querySelector('.live-test-modal:not(.hidden)');
+  if (modal) {
+    return modal.classList.contains('live-test-theme-dark') ? 'dark' : 'light';
+  }
+  if (document.body.classList.contains('live-test-theme-dark') || document.documentElement.classList.contains('live-test-theme-dark')) {
+    return 'dark';
+  }
+  return 'light';
+}
+
 /**
  * Controller to mount and manage FollowUpSendButton from vanilla JavaScript
  */
@@ -91,23 +112,17 @@ export function createFollowUpButton(mountEl, initialOptions = {}) {
   let state = {
     isGenerating: false,
     disabled: false,
-    theme: resolveTheme(),
+    theme: resolveThemeFromDom(mountEl),
     ...initialOptions
   };
 
-  function resolveTheme() {
-    if (document.querySelector('.live-test-theme-dark') || document.body.classList.contains('live-test-theme-dark')) {
-      return 'dark';
-    }
-    return 'light';
-  }
-
   function render() {
+    const currentTheme = state.theme || resolveThemeFromDom(mountEl);
     root.render(
       <FollowUpSendButton
         isGenerating={state.isGenerating}
         disabled={state.disabled}
-        theme={state.theme || resolveTheme()}
+        theme={currentTheme}
         title={state.title}
         onSend={() => {
           if (typeof state.onSend === 'function') state.onSend();
@@ -124,7 +139,7 @@ export function createFollowUpButton(mountEl, initialOptions = {}) {
   return {
     setGenerating(isGenerating) {
       state.isGenerating = Boolean(isGenerating);
-      state.theme = resolveTheme();
+      state.theme = resolveThemeFromDom(mountEl);
       render();
     },
     setDisabled(disabled) {
