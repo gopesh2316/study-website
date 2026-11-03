@@ -719,7 +719,8 @@
       if (followupInput && charCountEl) {
         followupInput.addEventListener('input', () => {
           followupInput.style.height = 'auto';
-          followupInput.style.height = Math.min(followupInput.scrollHeight, 120) + 'px';
+          const newH = Math.min(Math.max(followupInput.scrollHeight, 46), 120);
+          followupInput.style.height = newH + 'px';
           charCountEl.textContent = `${followupInput.value.length} / 1000`;
         });
 
@@ -796,7 +797,7 @@
 
         // Clear input text
         followupInput.value = '';
-        followupInput.style.height = 'auto';
+        followupInput.style.height = '';
         if (charCountEl) charCountEl.textContent = '0 / 1000';
 
         popupSession.conversationHistory.push({
@@ -969,6 +970,9 @@
           }
 
           followupInput.value = text;
+          followupInput.style.height = 'auto';
+          const restoreH = Math.min(Math.max(followupInput.scrollHeight, 46), 120);
+          followupInput.style.height = restoreH + 'px';
           followupInput.disabled = false;
           if (followupSendBtn) followupSendBtn.disabled = false;
           if (sendBtnController && typeof sendBtnController.setDisabled === 'function') {

@@ -7519,7 +7519,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   background-color: transparent !important;
   border-bottom: 1px solid #2a2a2a !important;
   align-items: center !important;
-  padding: 24px 36px 16px 36px !important;
+  padding: 24px 24px 16px 28px !important;
   margin: 0 !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -7709,16 +7709,6 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   box-sizing: border-box !important;
 }
 
-.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea {
-  background: #242424 !important;
-  border: 1.5px solid #383838 !important;
-  color: #f8fafc !important;
-}
-
-.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea:focus {
-  border-color: #3b82f6 !important;
-}
-
 .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-char-count,
 .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-turn-badge,
 .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-meta-dot {
@@ -7762,19 +7752,33 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   border-radius: 100px !important;
   border: 1.5px solid #e2e8f0 !important;
   outline: none !important;
-  padding: 12px 52px 12px 22px !important;
-  line-height: 1.4 !important;
+  padding: 10.5px 52px 10.5px 20px !important;
+  line-height: 22px !important;
+  font-size: 0.88rem !important;
+  font-family: inherit !important;
+  height: 46px;
   min-height: 46px !important;
   max-height: 120px !important;
   box-sizing: border-box !important;
-  background: #f8fafc !important;
+  background: #f1f5f9 !important;
   color: #0f172a !important;
-  box-shadow: none !important;
+  resize: none !important;
+  overflow-y: auto !important;
+  display: block !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease !important;
+}
+
+.followup-textarea::placeholder,
+.instant-help-inline .followup-textarea::placeholder {
+  line-height: 22px !important;
+  color: #94a3b8 !important;
+  opacity: 1 !important;
 }
 
 .followup-textarea:focus,
 .instant-help-inline .followup-textarea:focus {
   border-color: #3b82f6 !important;
+  background: #ffffff !important;
 }
 
 .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea {
@@ -7783,8 +7787,14 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
   color: #f8fafc !important;
 }
 
+.live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea::placeholder {
+  color: #71717a !important;
+  opacity: 1 !important;
+}
+
 .live-test-theme-dark .instant-help-inline .instant-help-followup-dock .followup-textarea:focus {
   border-color: #3b82f6 !important;
+  background: #1c1c1f !important;
 }
 
 /* Centered meta row below searchbar with char count, dot, and limit (Light & Dark Theme Compatible) */
@@ -7840,7 +7850,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 .followup-send-container,
 .instant-help-inline .followup-send-container {
   position: absolute !important;
-  right: 7px !important;
+  right: 10px !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
   width: 34px !important;
@@ -7937,7 +7947,7 @@ body:has(.app-layout[data-active-view="home"]) .skeleton-shimmer {
 }
 
 .live-test-theme-dark .btn-followup-send {
-  background: #27272a !important;
+  background: #3c3c3c !important;
   color: #f8fafc !important;
 }
 
